@@ -9,7 +9,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function RootLayout() {
   const isAuthenticated = useAuthStore(state => state.isAuthenticated)
-  const isLoading = true
+  const isLoading = useAuthStore(state => state.isLoading)
   const loadStoredAuth = useAuthStore(state => state.loadStoredAuth)
 
   useEffect(() => {
