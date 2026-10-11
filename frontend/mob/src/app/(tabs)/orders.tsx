@@ -4,7 +4,7 @@ import React from 'react'
 export default function orders() {
   return (
     <View>
-      <Text>orders</Text>
+      <Text>ordersjhkhj</Text>
     </View>
   )
 }
