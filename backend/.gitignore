@@ -1,0 +1,17 @@
+# Dependencies
+node_modules/
+
+# Env
+.env
+
+# Logs
+logs/
+*.log
+
+# Build outputs
+dist/
+build/
+
+# Database / Prisma
+prisma/generated/
+airbnb_pgdata/
