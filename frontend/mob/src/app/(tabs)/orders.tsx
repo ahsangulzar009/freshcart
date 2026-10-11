@@ -1,0 +1,10 @@
+import { View, Text } from 'react-native'
+import React from 'react'
+
+export default function orders() {
+  return (
+    <View>
+      <Text className="bg-red-600">ordersjhkhj</Text>
+    </View>
+  )
+}
