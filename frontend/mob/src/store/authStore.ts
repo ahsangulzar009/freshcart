@@ -80,6 +80,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ isLoading: true })
     try {
       const token = await getAccessToken();
+
       if (!token) {
         set({ isLoading: false })
         return;

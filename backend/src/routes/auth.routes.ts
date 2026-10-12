@@ -45,4 +45,9 @@ authRoutes.patch('/profile',
   authController.updateProfile.bind(authController)
 )
 
+authRoutes.get('/me',
+  authenticate,
+  authController.me.bind(authController)
+)
+
 export default authRoutes

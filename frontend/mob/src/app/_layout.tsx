@@ -16,6 +16,7 @@ export default function RootLayout() {
     loadStoredAuth()
   }, [])
 
+
   if (isLoading) {
     return (
       <SafeAreaView className="flex-1">
