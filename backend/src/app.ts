@@ -48,6 +48,7 @@ app.use(cookieParser())
 
 app.use('/uploads', express.static(path.join(__dirname, '..', "uploads")))
 
+
 apiV1Register(app)
 
 app.use((_req, res) => {

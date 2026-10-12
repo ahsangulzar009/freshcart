@@ -1,7 +1,7 @@
 import { v7 as uuidv7 } from 'uuid'
 import authRepository from './auth.repository';
 import { logger } from '@/utils/logger';
-import { generateIOtp, getOtpExpiry, isOtpExpired } from '@/utils/otp';
+import { generateOtp, getOtpExpiry, isOtpExpired } from '@/utils/otp';
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '@/utils/jwt';
 import { transporter } from '@/config/mailer';
 
@@ -21,7 +21,7 @@ export class AuthService {
     }
 
     await authRepository.invalidatePreviousOtps(user.id);
-    const code = generateIOtp();
+    const code = generateOtp();
     const expiresAt = getOtpExpiry();
     await authRepository.createOtp(user.id, code, expiresAt);
 

@@ -50,7 +50,7 @@ export class AuthRepository {
 
   invalidatePreviousOtps(userId: string) {
     return prisma.otpCode.updateMany({
-      where: { id: userId },
+      where: {userId },
       data: { usedAt: new Date() }
     })
   }

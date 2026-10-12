@@ -2,6 +2,7 @@ import * as SecureStore from 'expo-secure-store';
 
 export const BASE_URL = process.env.EXPO_PUBLIC_API_URL
 
+
 export async function getAccessToken() {
   return SecureStore.getItemAsync("accessToken")
 }
@@ -37,7 +38,7 @@ export async function apiRequest(
 
   const data = await response.json();
   if (!response.ok) {
-    throw new Error("Somthing went wrong")
+    throw new Error(data?.message || "Something went wrong");
   }
 
   return data
