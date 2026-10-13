@@ -38,7 +38,7 @@ export class AuthController {
       }
 
       const result = await authService.refreshToken(refreshToken);
-      ApiResponse(res, false, "Token refreshed", 200, result)
+      ApiResponse(res, true, "Token refreshed", 200, result)
     } catch (error) {
       logger.error("refreshToken controller error", { error: (error as Error).message })
       ApiResponse(res, false, (error as Error).message, 401)

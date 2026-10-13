@@ -1,4 +1,4 @@
-import { apiRequest, clearTokens, getAccessToken, saveTokens } from "@/lib/api";
+import { apiRequest, clearTokens, getAccessToken, getRefreshToken, saveTokens } from "@/lib/api";
 import { User } from "@/types";
 import { create } from "zustand";
 
@@ -11,7 +11,7 @@ interface AuthState {
 
   sendOtp: (email: string) => void;
   verifyOtp: (email: string, code: string) => void;
-  refreshToken: () => void;
+  refreshToken: () => Promise<boolean>;
   signOut: () => void;
   loadStoredAuth: () => void;
 }
@@ -58,46 +58,49 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   refreshToken: async () => {
     try {
-      const { getRefreshToken } = await import("@/lib/api");
-      const storedRefreshToken = await getRefreshToken();
-      if (!storedRefreshToken) throw new Error("No refresh token");
+      const stored = await getRefreshToken();
+      if (!stored) return false;
 
-      const response = await apiRequest("/auth/refresh", {
+      const res = await apiRequest("/auth/refresh", {
         method: "POST",
-        body: JSON.stringify({ refreshToken: storedRefreshToken })
+        body: JSON.stringify({ refreshToken: stored }),
       });
 
-      const { accessToken, refreshToken } = response.data;
-      await saveTokens(accessToken, refreshToken);
-      set({ accessToken })
-
+      await saveTokens(res.data.accessToken, res.data.refreshToken);
+      set({ accessToken: res.data.accessToken });
+      return true;
     } catch {
-      await get().signOut()
+      return false;
     }
   },
 
   loadStoredAuth: async () => {
-    set({ isLoading: true })
     try {
       const token = await getAccessToken();
+      if (!token) return;
 
-      if (!token) {
-        set({ isLoading: false })
-        return;
+      try {
+        const res = await apiRequest("/auth/me");
+        set({ user: res.data, accessToken: token, isAuthenticated: true });
+      } catch (e: any) {
+        if (e?.status !== 401) throw e;
+
+        const ok = await get().refreshToken();
+        if (!ok) throw e;
+
+        const res = await apiRequest("/auth/me");
+        set({
+          user: res.data,
+          accessToken: await getAccessToken(),
+          isAuthenticated: true,
+        });
       }
-
-      const response = await apiRequest("/auth/me");
-      set({
-        user: response.data,
-        accessToken: token,
-        isAuthenticated: true
-      })
-
-    } catch {
+    } catch (e) {
+      console.log("LOAD AUTH ERROR:", e);
       await clearTokens();
-      set({ user: null, accessToken: null, isAuthenticated: false })
+      set({ user: null, accessToken: null, isAuthenticated: false });
     } finally {
-      set({ isLoading: false })
+      set({ isLoading: false });
     }
   },
 

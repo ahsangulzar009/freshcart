@@ -41,7 +41,6 @@ export class ProductRepository {
     return prisma.product.findMany({
       where: { isActive: true, isFeatured: true },
       orderBy: { createdAt: 'desc' },
-      take: 10
     })
   }
 
