@@ -7,24 +7,33 @@ import { Response } from 'express'
 
 export async function updateProfile(req: AuthRequest, res: Response<UpdateProfileResponse>) {
   try {
+
+    if (!req.user) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    };
+
     const { name, phone } = req.body;
+
+    if (!name || !phone) {
+      return res.status(400).json({
+        success: false,
+        message: "Name or phone is required for updation"
+      })
+    }
     const user = await prisma.user.update({
-      where: { id: req.user!.userId },
+      where: { id: req.user.userId },
       data: { name, phone },
-      select: { id: true, email: true, name: true, phone: true, role: true }
+      select: { id: true, email: true, name: true, phone: true }
     })
 
-    logger.info("Profile updated", { userId: user.id, email: user.email })
+    logger.info("Profile updated", { userId: user.id, email: user.email, name: user.name, phone: user.phone })
 
     return res.status(201).json({
       success: true,
       message: "Profile updated successfully!",
       data: {
-        id: user.id,
-        email: user.email,
         name: user.name,
         phone: user.phone,
-        role: user.role
       }
     })
 
@@ -40,10 +49,7 @@ export async function updateProfile(req: AuthRequest, res: Response<UpdateProfil
 type UpdateProfileResponse = ApiResponse<{
   message: string,
   data: {
-    id: string,
-    email: string,
     name: string | null,
     phone: string | null,
-    role: string
   }
 }>

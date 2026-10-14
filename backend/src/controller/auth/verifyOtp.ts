@@ -98,13 +98,21 @@ export async function verifyOtp(req: Request, res: Response<VerifyOtpResponse>) 
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
       maxAge: 10 * 60 * 1000,
+      path: "/api/v1/freshcart/auth/me"
+    });
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+      path: "/api/v1/freshcart/auth/refresh"
     });
 
     return res.status(200).json({
       success: true,
       message: "Logged In Successfull!",
       data: {
-        refreshToken,
         user: {
           id: user.id,
           email: user.email,
@@ -127,7 +135,7 @@ type VerifyOtpResponse = ApiResponse<{
   message: string,
   data: {
     accessToken?: string;
-    refreshToken: string,
+    refreshToken?: string,
     user: {
       id: string,
       email: string,

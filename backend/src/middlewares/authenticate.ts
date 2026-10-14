@@ -14,18 +14,13 @@ export function authenticate(
 ) {
   try {
 
-    const clientType = req.headers["x-client-type"] === "mobile" ? "mobile" : "web";
-    let token: string | undefined
+    const authHeader = req.headers.authorization;
+    const bearerToken = authHeader?.startsWith("Bearer ")
+      ? authHeader.split(" ")[1]
+      : undefined;
+    const cookieToken = req.cookies?.accessToken;
 
-
-    if (clientType === "mobile") {
-      const authHeader = req.headers.authorization;
-      if (authHeader?.startsWith("Bearer ")) {
-        token = authHeader.split(" ")[1];
-      }
-    } else {
-      token = req.cookies?.accessToken;
-    }
+    const token = bearerToken ?? cookieToken;
 
     if (!token) {
       return res.status(401).json({

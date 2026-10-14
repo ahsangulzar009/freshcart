@@ -7,23 +7,16 @@ import { Request, Response } from 'express'
 
 export async function refreshToken(req: Request, res: Response<RefreshTokenResponse>) {
   try {
-    const { refreshToken } = req.body;
+    const clientType = req.headers["x-client-type"] === "mobile" ? "mobile" : "web";
+
+    const refreshToken =
+      clientType === "mobile" ? req.body.refreshToken : req.cookies.refreshToken;
 
     if (!refreshToken) {
       return res.status(401).json({
         success: false,
-        message: "Session expired please login again"
-      })
-    }
-
-    let payload;
-
-    payload = verifyRefreshToken(refreshToken);
-    if (!payload) {
-      return res.status(401).json({
-        success: false,
-        message: "Please Login again"
-      })
+        message: "Session expired, please login again",
+      });
     }
 
     const storedToken = await prisma.refreshToken.findUnique({
@@ -45,6 +38,17 @@ export async function refreshToken(req: Request, res: Response<RefreshTokenRespo
         message: "Session expired please login again"
       })
     }
+
+    let payload;
+
+    payload = verifyRefreshToken(refreshToken);
+    if (!payload) {
+      return res.status(401).json({
+        success: false,
+        message: "Please Login again"
+      })
+    }
+
 
     if (storedToken.revokedAt) {
       await prisma.refreshToken.updateMany({
@@ -92,7 +96,7 @@ export async function refreshToken(req: Request, res: Response<RefreshTokenRespo
       data: { userId: storedToken.user.id, token: newRefreshToken, family: storedToken.family, expiresAt }
     })
 
-    const clientType = req.headers["x-client-type"] === "mobile" ? "mobile" : "web"
+
 
     logger.info("Token refreshed", { userId: storedToken.user.id, clientType })
 
@@ -111,13 +115,19 @@ export async function refreshToken(req: Request, res: Response<RefreshTokenRespo
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
       maxAge: 10 * 60 * 1000,
+      path: "/api/v1/freshcart/auth/me"
+    });
+
+    res.cookie("refreshToken", newRefreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      path: "/api/v1/freshcart/auth/refresh",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     return res.status(200).json({
-      success: true,
-      data: {
-        refreshToken: newRefreshToken
-      }
+      success: true
     })
 
   } catch (error) {
@@ -130,8 +140,8 @@ export async function refreshToken(req: Request, res: Response<RefreshTokenRespo
 }
 
 type RefreshTokenResponse = ApiResponse<{
-  data: {
-    accessToken?: string,
+  data?: {
+    accessToken: string,
     refreshToken: string
   }
 }>

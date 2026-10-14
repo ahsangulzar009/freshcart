@@ -1,12 +1,13 @@
+import { currentUser } from "@/controller/auth/currentUser";
 import { logout } from "@/controller/auth/logout";
 import { logoutAll } from "@/controller/auth/logoutAll";
 import { refreshToken } from "@/controller/auth/refreshToken";
 import { sendOtp } from "@/controller/auth/sendOtp";
+import { updateProfile } from "@/controller/auth/updateProfile";
 import { verifyOtp } from "@/controller/auth/verifyOtp";
 import { apiValidator } from "@/middlewares/apiValidator";
 import { authenticate } from "@/middlewares/authenticate";
 import { authRateLimiter, otpRateLimiter } from "@/middlewares/rateLimiter";
-import authController from "@/modules/auth/auth.controller";
 import { validator } from "@/validators";
 import { Router } from "express";
 
@@ -28,9 +29,11 @@ authRoutes.post('/verify-otp',
 
 authRoutes.post('/refresh',
   authRateLimiter,
-  apiValidator(validator.refreshTokenSchema),
   refreshToken
 )
+
+
+// Protected routes
 
 authRoutes.post('/logout',
   authRateLimiter,
@@ -38,21 +41,20 @@ authRoutes.post('/logout',
   logout
 )
 
-// Protected routes
-
 authRoutes.post('/logout-all',
+  authRateLimiter,
   authenticate,
   logoutAll
 )
 
 authRoutes.patch('/profile',
   authenticate,
-  authController.updateProfile.bind(authController)
+  updateProfile
 )
 
 authRoutes.get('/me',
   authenticate,
-  authController.me.bind(authController)
+  currentUser
 )
 
 export default authRoutes

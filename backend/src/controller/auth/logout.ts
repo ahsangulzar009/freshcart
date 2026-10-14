@@ -10,32 +10,45 @@ export async function logout(req: AuthRequest, res: Response<LogoutResponse>) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
     }
 
-    const { refreshToken } = req.body ?? {}
+    const clientType = req.headers["x-client-type"] === "mobile" ? "mobile" : "web";
+
+    const refreshToken =
+      clientType === "mobile"
+        ? req.body?.refreshToken
+        : req.cookies?.refreshToken;
 
     if (refreshToken) {
       const storedToken = await prisma.refreshToken.findUnique({
         where: { token: refreshToken },
-        select: { family: true, userId: true }
+        select: { family: true, userId: true },
       });
 
       if (storedToken && storedToken.userId === req.user.userId) {
         await prisma.refreshToken.updateMany({
           where: { family: storedToken.family, revokedAt: null },
-          data: { revokedAt: new Date() }
+          data: { revokedAt: new Date() },
+        });
+      } else if (storedToken && storedToken.userId !== req.user.userId) {
+        logger.warn("Logout with mismatched refresh token", {
+          requestUserId: req.user.userId,
+          tokenUserId: storedToken.userId,
         });
       }
-    } else {
-      await prisma.refreshToken.updateMany({
-        where: { userId: req.user.userId, revokedAt: null },
-        data: { revokedAt: new Date() }
-      });
     }
+
 
     res.clearCookie("accessToken", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
-      path: "/"
+      path: "/api/v1/freshcart/auth/me"
+    });
+
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      path: "/api/v1/freshcart/auth/refresh"
     });
 
     logger.info("User logged out", { userId: req.user.userId });

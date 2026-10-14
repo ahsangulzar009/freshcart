@@ -21,7 +21,14 @@ export async function logoutAll(req: AuthRequest, res: Response<LogoutAllRespons
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
-      path: "/"
+      path: "/api/v1/freshcart/auth/me"
+    });
+
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      path: "/api/v1/freshcart/auth/refresh"
     });
 
     return res.status(200).json({
