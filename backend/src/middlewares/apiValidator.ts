@@ -1,6 +1,6 @@
-import { ApiResponse } from '@/utils/ApiResponse';
+
 import { logger } from '@/utils/logger';
-import  { NextFunction, Request, Response } from 'express'
+import { NextFunction, Request, Response } from 'express'
 import { ZodType } from 'zod'
 
 export function apiValidator(schema: ZodType) {
@@ -8,7 +8,7 @@ export function apiValidator(schema: ZodType) {
     const result = schema.safeParse(req.body)
     if (!result.success) {
       const errors = result.error.issues.map((err) => ({
-        field: err.path.join("."),
+        path: err.path,
         message: err.message
       }));
 
@@ -18,8 +18,12 @@ export function apiValidator(schema: ZodType) {
         errors
       });
 
-      ApiResponse(res, false, "Api schema validation failed", 422, undefined, errors);
-      return;
+
+      return res.status(422).json({
+        success: false,
+        message: "Invalid request data",
+        userErrors: errors
+      })
     }
 
     req.body = result.data;

@@ -23,42 +23,41 @@ export function errorHandler(
       meta?: { target?: string[] }
     }
     if (prismaError.code === 'P2002') {
-      ApiResponse(
-        res,
-        false,
-        `${prismaError.meta?.target?.join(", ")} already exists`,
-        409
-      )
-
-      return;
+      return res.status(409).json({
+        success: false,
+        message: `${prismaError.meta?.target?.join(", ")} already exists`
+      })
     }
 
     if (prismaError.code === 'P2025') {
-      ApiResponse(res, false, "Record not found", 404)
-      return;
+      return res.status(404).json({
+        success: false,
+        message: "Record not found"
+      })
     }
   }
 
   // JWT Error Handling
   if (err.name == 'JsonWebTokenError') {
-    ApiResponse(res, false, "Invalid token", 401)
-    return;
+    return res.status(401).json({
+      success: false,
+      message: "Invalid token"
+    })
+
   }
 
   // Token Expire Error Handling
   if (err.name === "TokenExpiredError") {
-    ApiResponse(res, false, "Token Expired", 401)
-    return;
+    return res.status(401).json({
+      success: false,
+      message: "Token Expired"
+    })
   }
 
-  ApiResponse(
-    res,
-    false,
-    process.env.NODE_ENV === 'production'
+  return res.status(500).json({
+    success: false,
+    message: process.env.NODE_ENV === 'production'
       ? "Internal server error"
       : err.message,
-    500
-  )
-
-  return;
+  })
 }

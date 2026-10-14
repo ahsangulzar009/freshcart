@@ -1,11 +1,10 @@
 import { AccessTokenPayload, verifyAccessToken } from "@/utils/jwt";
 import { logger } from "@/utils/logger";
-import { ApiResponse } from "@/utils/ApiResponse";
 import { NextFunction, Request, Response } from "express"
 
 
 export interface AuthRequest extends Request {
-  user?: AccessTokenPayload
+  user: AccessTokenPayload
 }
 
 export function authenticate(
@@ -17,17 +16,28 @@ export function authenticate(
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      ApiResponse(res, false, "No token provided", 401)
-      return;
+      return res.status(401).json({
+        success: false,
+        message: "No token provided"
+      })
     }
+
 
     const token = authHeader.split(" ")[1];
     if (!token) {
-      ApiResponse(res, false, "Invalid token format", 401)
-      return;
+      return res.status(401).json({
+        success: false,
+        message: "Invalid token format"
+      })
     }
 
     const decoded = verifyAccessToken(token);
+    if (!decoded) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized"
+      })
+    }
     req.user = decoded
     logger.info("Authenticated request", {
       userId: decoded.userId,
@@ -42,6 +52,10 @@ export function authenticate(
     logger.warn("Authentication failed", {
       path: req.path,
       error: (error as Error).message
+    })
+    return res.status(401).json({
+      success: false,
+      message: "Invalid or expired token"
     })
   }
 }

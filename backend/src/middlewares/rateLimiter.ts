@@ -1,4 +1,4 @@
-import { ApiResponse } from '@/utils/ApiResponse';
+
 import { Request, Response } from 'express'
 import { rateLimit, ipKeyGenerator } from 'express-rate-limit'
 
@@ -8,7 +8,10 @@ export const otpRateLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   handler: (_req: Request, res: Response) => {
-    ApiResponse(res, false, "Too many OTP requests. Please wait for 15 minutes", 429)
+    return res.status(429).json({
+      success: false,
+      message: "Too many OTP requests. Please wait for 15 minutes"
+    })
   },
   keyGenerator: (req: Request) => {
     const email = req.body?.email;
@@ -23,16 +26,22 @@ export const authRateLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   handler: (_req: Request, res: Response) => {
-    ApiResponse(res, false, "Too many auth requests. Please try again later", 429)
+    return res.status(429).json({
+      success: false,
+      message: "Too many auth requests. Please try again later"
+    })
   },
 })
 
 export const uploadRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  limit: 10,
+  limit: 20,
   standardHeaders: true,
   legacyHeaders: false,
   handler: (_req: Request, res: Response) => {
-    ApiResponse(res, false, "Too many upload requests. Please slow down", 429)
+    return res.status(429).json({
+      success: false,
+      message: "Too many upload requests. Please slow down"
+    })
   },
 })
