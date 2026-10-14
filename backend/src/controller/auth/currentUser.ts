@@ -6,6 +6,9 @@ import { logger } from '@/utils/logger';
 
 export async function currentUser(req: AuthRequest, res: Response<CurrentUserResponse>) {
   try {
+    if (!req.user) {
+      return res.status(401).json({ success: false, message: "Unauthorized" })
+    }
     return res.status(200).json({
       success: true,
       data: {

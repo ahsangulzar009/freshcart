@@ -4,7 +4,7 @@ import { NextFunction, Request, Response } from "express"
 
 
 export interface AuthRequest extends Request {
-  user: AccessTokenPayload
+  user?: AccessTokenPayload
 }
 
 export function authenticate(
