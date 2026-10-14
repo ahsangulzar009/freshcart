@@ -33,23 +33,25 @@ export async function verifyOtp(req: Request, res: Response<VerifyOtpResponse>) 
       }
     });
     if (!otp) {
+      await prisma.otpCode.updateMany({
+        where: {
+          userId: user.id,
+          usedAt: null,
+          expiresAt: { gt: new Date() }
+        },
+        data: { attempts: { increment: 1 } }
+      });
+
       return res.status(401).json({
         success: false,
         message: "Invalid or expired otp"
-      })
+      });
     }
 
     if (otp.attempts >= 5) {
       return res.status(409).json({
         success: false,
         message: "Too many failed attempts. Please request a new OTP."
-      })
-    }
-
-    if (new Date() > otp.expiresAt) {
-      return res.status(400).json({
-        success: false,
-        message: "OTP has expired. Please request a new one."
       })
     }
 
@@ -71,11 +73,37 @@ export async function verifyOtp(req: Request, res: Response<VerifyOtpResponse>) 
 
     logger.info("User logged in", { userId: user.id, email });
 
+    const clientType = req.headers["x-client-type"] === "mobile" ? "mobile" : "web";
+
+    if (clientType === 'mobile') {
+      return res.status(200).json({
+        success: true,
+        message: "Logged In Successfully!",
+        data: {
+          accessToken,
+          refreshToken,
+          user: {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            phone: user.phone,
+            role: user.role
+          }
+        }
+      });
+    }
+
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 10 * 60 * 1000,
+    });
+
     return res.status(200).json({
       success: true,
-      message: "Login Successfull",
+      message: "Logged In Successfull!",
       data: {
-        accessToken,
         refreshToken,
         user: {
           id: user.id,
@@ -98,7 +126,7 @@ export async function verifyOtp(req: Request, res: Response<VerifyOtpResponse>) 
 type VerifyOtpResponse = ApiResponse<{
   message: string,
   data: {
-    accessToken: string,
+    accessToken?: string;
     refreshToken: string,
     user: {
       id: string,

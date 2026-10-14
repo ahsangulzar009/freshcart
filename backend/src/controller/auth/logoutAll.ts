@@ -7,11 +7,22 @@ import { Response } from 'express'
 export async function logoutAll(req: AuthRequest, res: Response<LogoutAllResponse>) {
   try {
 
+    if (!req.user) {
+      return res.status(401).json({ success: false, message: "Unauthorized" })
+    }
+
     await prisma.refreshToken.updateMany({
-      where: { userId: req.user!.userId, revokedAt: null },
+      where: { userId: req.user.userId, revokedAt: null },
       data: { revokedAt: new Date() }
     })
-    logger.info("User logged out form all devices", { userId: req.user!.userId })
+    logger.info("User logged out from all devices", { userId: req.user.userId })
+
+    res.clearCookie("accessToken", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      path: "/"
+    });
 
     return res.status(200).json({
       success: true,

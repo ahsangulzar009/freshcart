@@ -13,21 +13,24 @@ export function authenticate(
   next: NextFunction
 ) {
   try {
-    const authHeader = req.headers.authorization;
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({
-        success: false,
-        message: "No token provided"
-      })
+    const clientType = req.headers["x-client-type"] === "mobile" ? "mobile" : "web";
+    let token: string | undefined
+
+
+    if (clientType === "mobile") {
+      const authHeader = req.headers.authorization;
+      if (authHeader?.startsWith("Bearer ")) {
+        token = authHeader.split(" ")[1];
+      }
+    } else {
+      token = req.cookies?.accessToken;
     }
 
-
-    const token = authHeader.split(" ")[1];
     if (!token) {
       return res.status(401).json({
         success: false,
-        message: "Invalid token format"
+        message: "Unauthorized"
       })
     }
 
@@ -35,7 +38,7 @@ export function authenticate(
     if (!decoded) {
       return res.status(401).json({
         success: false,
-        message: "Unauthorized"
+        message: "Invalid token"
       })
     }
     req.user = decoded

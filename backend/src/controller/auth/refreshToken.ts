@@ -22,7 +22,7 @@ export async function refreshToken(req: Request, res: Response<RefreshTokenRespo
     if (!payload) {
       return res.status(401).json({
         success: false,
-        message: "Please Login"
+        message: "Please Login again"
       })
     }
 
@@ -33,7 +33,8 @@ export async function refreshToken(req: Request, res: Response<RefreshTokenRespo
           select: {
             id: true,
             email: true,
-            role: true
+            role: true,
+            isActive: true
           }
         }
       }
@@ -68,6 +69,13 @@ export async function refreshToken(req: Request, res: Response<RefreshTokenRespo
       })
     }
 
+    if (!storedToken.user.isActive) {
+      return res.status(403).json({
+        success: false,
+        message: "Your account has been deactivated"
+      })
+    }
+
     await prisma.refreshToken.update({
       where: { id: storedToken.id },
       data: { revokedAt: new Date() }
@@ -81,27 +89,49 @@ export async function refreshToken(req: Request, res: Response<RefreshTokenRespo
     const { token: newRefreshToken, expiresAt } = generateRefreshToken(storedToken.user.id, payload.family);
 
     await prisma.refreshToken.create({
-      data: { userId: storedToken.user.id, token: newRefreshToken, family: payload.family, expiresAt }
+      data: { userId: storedToken.user.id, token: newRefreshToken, family: storedToken.family, expiresAt }
     })
 
-    logger.info("Token refreshed", { userId: storedToken.user.id })
+    const clientType = req.headers["x-client-type"] === "mobile" ? "mobile" : "web"
+
+    logger.info("Token refreshed", { userId: storedToken.user.id, clientType })
+
+    if (clientType === "mobile") {
+      return res.status(200).json({
+        success: true,
+        data: {
+          accessToken,
+          refreshToken: newRefreshToken
+        }
+      })
+    }
+
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 10 * 60 * 1000,
+    });
 
     return res.status(200).json({
       success: true,
       data: {
-        accessToken,
         refreshToken: newRefreshToken
       }
     })
 
   } catch (error) {
-
+    logger.error("refreshToken controller error", { error: (error as Error).message })
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error for refreshing token"
+    })
   }
 }
 
 type RefreshTokenResponse = ApiResponse<{
   data: {
-    accessToken: string,
+    accessToken?: string,
     refreshToken: string
   }
 }>

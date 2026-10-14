@@ -1,3 +1,8 @@
+import { logout } from "@/controller/auth/logout";
+import { logoutAll } from "@/controller/auth/logoutAll";
+import { refreshToken } from "@/controller/auth/refreshToken";
+import { sendOtp } from "@/controller/auth/sendOtp";
+import { verifyOtp } from "@/controller/auth/verifyOtp";
 import { apiValidator } from "@/middlewares/apiValidator";
 import { authenticate } from "@/middlewares/authenticate";
 import { authRateLimiter, otpRateLimiter } from "@/middlewares/rateLimiter";
@@ -12,32 +17,32 @@ const authRoutes = Router()
 authRoutes.post('/send-otp',
   otpRateLimiter,
   apiValidator(validator.sentOtpSchema),
-  authController.sendOtp.bind(authController)
+  sendOtp
 )
 
 authRoutes.post('/verify-otp',
   authRateLimiter,
   apiValidator(validator.verifyOtpSchema),
-  authController.verifyOtp.bind(authController)
+  verifyOtp
 )
 
 authRoutes.post('/refresh',
   authRateLimiter,
   apiValidator(validator.refreshTokenSchema),
-  authController.refreshToken.bind(authController)
+  refreshToken
 )
 
 authRoutes.post('/logout',
   authRateLimiter,
-  apiValidator(validator.logoutSchema),
-  authController.logout.bind(authController)
+  authenticate,
+  logout
 )
 
 // Protected routes
 
 authRoutes.post('/logout-all',
   authenticate,
-  authController.logoutAll.bind(authController)
+  logoutAll
 )
 
 authRoutes.patch('/profile',

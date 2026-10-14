@@ -18,7 +18,7 @@ export async function currentUser(req: AuthRequest, res: Response<CurrentUserRes
       }
     })
   } catch (error) {
-    logger.error("me controller error", { error: (error as Error).message })
+    logger.error("currentUser controller error", { error: (error as Error).message })
     return res.status(500).json({
       success: false,
       message: "Internal Server Error for authorization"
