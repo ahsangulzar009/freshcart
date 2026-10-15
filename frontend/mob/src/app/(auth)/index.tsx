@@ -1,4 +1,4 @@
-import { useAuthStore } from '@/store/authStore';
+import { useSendOtp } from '@/hooks/useAuth';
 import { Ionicons } from '@react-native-vector-icons/ionicons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
@@ -8,8 +8,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function AuthScreen() {
   const [email, setEmail] = useState("")
-  const sendOtp = useAuthStore(state => state.sendOtp)
-  const isLoading = useAuthStore(state => state.isLoading);
+  const { mutateAsync: sendOtp, isPending: isLoading } = useSendOtp()
   const router = useRouter()
 
   async function handleOtp() {
@@ -23,12 +22,18 @@ export default function AuthScreen() {
       Alert.alert("Error", "Please enter a valid email")
       return;
     }
+    const cleanEmail = email.trim().toLowerCase();
 
     try {
-      await sendOtp(email.trim().toLowerCase())
+      const data = await sendOtp(cleanEmail);
+      if (!data.success) {
+        Alert.alert("Error", data.message);
+        return;
+      }
       router.push(`/(auth)/login?email=${encodeURIComponent(email.trim().toLowerCase())}`)
-    } catch (error) {
-      Alert.alert("Error", (error as Error).message)
+
+    } catch {
+      Alert.alert("Error", "Network error, please try again")
     }
 
   }

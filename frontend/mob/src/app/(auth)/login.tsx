@@ -1,9 +1,9 @@
 import { View, Text, TextInput, KeyboardAvoidingView, Platform, TouchableOpacity, Alert } from 'react-native'
-import React, { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useAuthStore } from '@/store/authStore';
 import { Ionicons } from '@react-native-vector-icons/ionicons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSendOtp, useVerifyOtp } from '@/hooks/useAuth';
 
 export default function LoginScreen() {
   const { email } = useLocalSearchParams<{ email: string }>()
@@ -11,9 +11,8 @@ export default function LoginScreen() {
   const [timer, setTimer] = useState(60);
   const [canResend, setCanResend] = useState(false);
   const inputRefs = useRef<(TextInput | null)[]>([]);
-  const verifyOtp = useAuthStore(state => state.verifyOtp)
-  const sendOtp = useAuthStore(state => state.sendOtp)
-  const isLoading = useAuthStore(state => state.isLoading);
+  const { mutate: verifyOtp, isPending: isLoading } = useVerifyOtp()
+  const { mutate: sendOtp } = useSendOtp();
   const router = useRouter();
 
   useEffect(() => {
@@ -45,34 +44,48 @@ export default function LoginScreen() {
     }
   }
 
-  async function handleVerify() {
+  function handleVerify() {
     const code = otp.join('');
     if (code.length !== 6) {
       Alert.alert("Error", "Please enter the complete 6 Digit OTP");
       return;
     }
 
-    try {
-      await verifyOtp(email, code)
-    } catch (error) {
-      Alert.alert("Error", (error as Error).message);
-      setOtp(["", "", "", "", "", ""])
-      inputRefs.current[0]?.focus()
-    }
-
+    verifyOtp(
+      { email, code },
+      {
+        onSuccess: (json) => {
+          if (!json.success) {
+            Alert.alert("Error", json.message);
+            setOtp(["", "", "", "", "", ""]);
+            inputRefs.current[0]?.focus();
+          }
+        },
+        onError: () => {
+          Alert.alert("Error", "Network error, please try again");
+        },
+      }
+    );
   }
 
-  async function handleResend() {
+  function handleResend() {
     if (!canResend) return;
-    try {
-      await sendOtp(email);
-      setTimer(60)
-      setCanResend(false)
-      setOtp((["", "", "", "", "", ""]));
-      inputRefs.current[0]?.focus()
-    } catch (error) {
-      Alert.alert("Error", (error as Error).message)
-    }
+
+    sendOtp(email, {
+      onSuccess: (json) => {
+        if (!json.success) {
+          Alert.alert("Error", json.message);
+          return;
+        }
+        setTimer(60);
+        setCanResend(false);
+        setOtp(["", "", "", "", "", ""]);
+        inputRefs.current[0]?.focus();
+      },
+      onError: () => {
+        Alert.alert("Error", "Network error, please try again");
+      },
+    });
   }
 
   return (

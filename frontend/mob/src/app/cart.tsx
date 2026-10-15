@@ -1,11 +1,9 @@
 import { View, Text, TouchableOpacity, Alert, ScrollView, Image } from 'react-native';
-import React from 'react';
 import { useRouter } from 'expo-router';
 import { useCartStore } from '@/store/cartStore';
 import { Ionicons } from '@react-native-vector-icons/ionicons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-// cartStore ke FREE_DELIVERY_ABOVE ke barabar rakho
 const FREE_DELIVERY_ABOVE = 500;
 
 export default function CartScreen() {
