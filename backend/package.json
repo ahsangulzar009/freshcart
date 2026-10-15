@@ -7,6 +7,7 @@
     "dev": "tsx watch --env-file=.env src/app.ts",
     "build": "tsc",
     "start": "node --env-file=.env dist/index.js",
+    "type-check": "tsc --noEmit --watch --preserveWatchOutput",
     "prisma:generate": "npx prisma generate --schema=./prisma/schema.prisma",
     "prisma:migrate": "npx prisma migrate dev --name init --schema=./prisma/schema.prisma"
   },
