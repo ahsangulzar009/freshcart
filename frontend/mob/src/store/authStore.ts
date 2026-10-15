@@ -1,4 +1,4 @@
-import { apiRequest, clearTokens, getAccessToken, getRefreshToken, saveTokens } from "@/lib/api";
+import { apiRequest, clearTokens, getAccessToken, getRefreshToken, saveTokens } from "@/lib/storage";
 import { User } from "@/types";
 import { create } from "zustand";
 
@@ -107,7 +107,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   signOut: async () => {
     set({ isLoading: true })
     try {
-      const { getRefreshToken } = await import("@/lib/api");
+      const { getRefreshToken } = await import("@/lib/storage");
       const storedRefreshToken = await getRefreshToken();
       if (storedRefreshToken) {
         await apiRequest("/auth/logout", {

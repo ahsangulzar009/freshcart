@@ -1,7 +1,5 @@
 import * as SecureStore from 'expo-secure-store';
 
-export const BASE_URL = process.env.EXPO_PUBLIC_API_URL
-
 
 export async function getAccessToken() {
   return SecureStore.getItemAsync("accessToken")
@@ -21,26 +19,3 @@ export async function clearTokens() {
   await SecureStore.deleteItemAsync("refreshToken");
 }
 
-export async function apiRequest(
-  endPoint: string,
-  options: RequestInit = {}
-) {
-  const accessToken = await getAccessToken();
-
-  const response = await fetch(`${BASE_URL}${endPoint}`, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
-      ...options.headers
-    }
-  });
-
-  const data = await response.json();
-  if (!response.ok) {
-    throw new Error(data?.message || "Something went wrong");
-  }
-
-  return data
-
-} 

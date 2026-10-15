@@ -1,4 +1,5 @@
-import { useSendOtp } from '@/hooks/useAuth';
+
+import { useSendOtp } from '@/features/auth';
 import { Ionicons } from '@react-native-vector-icons/ionicons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';

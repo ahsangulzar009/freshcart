@@ -1,4 +1,4 @@
-import { apiRequest } from '@/lib/api';
+import { apiRequest } from '@/lib/storage';
 import { useAuthStore } from '@/store/authStore';
 import { useCartStore } from '@/store/cartStore';
 import { Product } from '@/types';

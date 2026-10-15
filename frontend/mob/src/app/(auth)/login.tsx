@@ -3,7 +3,8 @@ import { useEffect, useRef, useState } from 'react'
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@react-native-vector-icons/ionicons';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useSendOtp, useVerifyOtp } from '@/hooks/useAuth';
+import { useSendOtp, useVerifyOtp } from '@/features/auth';
+
 
 export default function LoginScreen() {
   const { email } = useLocalSearchParams<{ email: string }>()
