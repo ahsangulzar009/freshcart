@@ -1,21 +1,14 @@
+import "../../global.css";
 import { Stack } from "expo-router";
-import "../../global.css"
-import { useAuthStore } from "@/store/authStore";
-import { useEffect } from "react";
 import { ActivityIndicator, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { QueryClientProvider } from "@tanstack/react-query";
+import queryClient from "@/lib/queryClient";
+import { useUser } from "@/hooks/useAuth";
 
-
-
-export default function RootLayout() {
-  const isAuthenticated = useAuthStore(state => state.isAuthenticated)
-  const isLoading = useAuthStore(state => state.isLoading)
-  const loadStoredAuth = useAuthStore(state => state.loadStoredAuth)
-
-  useEffect(() => {
-    loadStoredAuth()
-  }, [])
-
+function RootNavigator() {
+  const { data: auth, isLoading } = useUser();
+  const isAuthenticated = !!auth?.success;
 
   if (isLoading) {
     return (
@@ -24,21 +17,27 @@ export default function RootLayout() {
           <ActivityIndicator size="large" color="#16a34a" />
         </View>
       </SafeAreaView>
-    )
+    );
   }
 
   return (
-    <>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Protected guard={isAuthenticated}>
-          <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="cart" />
-        </Stack.Protected>
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Protected guard={isAuthenticated}>
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="cart" />
+      </Stack.Protected>
 
-        <Stack.Protected guard={!isAuthenticated}>
-          <Stack.Screen name="(auth)" />
-        </Stack.Protected>
-      </Stack>
-    </>
-  )
+      <Stack.Protected guard={!isAuthenticated}>
+        <Stack.Screen name="(auth)" />
+      </Stack.Protected>
+    </Stack>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <RootNavigator />
+    </QueryClientProvider>
+  );
 }
