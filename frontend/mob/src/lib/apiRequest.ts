@@ -1,3 +1,4 @@
+import queryClient from "./queryClient";
 import { clearTokens, getAccessToken, getRefreshToken, saveTokens } from "./storage";
 
 export const BASE_URL = process.env.EXPO_PUBLIC_API_URL
@@ -61,8 +62,9 @@ export async function apiRequest(
     const refreshed = await refreshTokens();
 
     if (!refreshed.success) {
-      await clearTokens()
-      return refreshed
+      await clearTokens();
+      queryClient.setQueryData(["me"], { success: false, message: refreshed.message });
+      return { status: 401, data: refreshed };
     }
 
     result = await request(endPoint, options, await getAccessToken());
@@ -70,10 +72,10 @@ export async function apiRequest(
 
   if (result.status === 403 || result.status === 401) {
     await clearTokens();
+    queryClient.setQueryData(["me"], { success: false, message: result.data.message });
     return result
   }
-
-
+  
   return result;
 
 } 
