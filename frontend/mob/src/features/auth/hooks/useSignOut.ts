@@ -23,7 +23,7 @@ export function useSignOut() {
     },
     onSettled: () => {
       qc.clear();
-      qc.setQueryData(["me"], { success: false, message: null });
+      qc.setQueryData(["auth","me"], { success: false, message: null });
     },
   });
 }

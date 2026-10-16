@@ -72,7 +72,7 @@ export async function apiRequest(
 
   if (result.status === 403 || result.status === 401) {
     await clearTokens();
-    queryClient.setQueryData(["me"], { success: false, message: result.data.message });
+    queryClient.setQueryData(["auth","me"], { success: false, message: result.data.message });
     return result
   }
   

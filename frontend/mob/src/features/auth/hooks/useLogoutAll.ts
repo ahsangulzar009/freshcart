@@ -14,7 +14,7 @@ export function useLogoutAll() {
       if (data.success) {
         await clearTokens();
         qc.clear();
-        qc.setQueryData(["me"], { success: false, message: null });
+        qc.setQueryData(["auth","me"], { success: false, message: null });
       }
     }
   })

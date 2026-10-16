@@ -20,7 +20,7 @@ export function useVerifyOtp() {
     },
     onSuccess: (json) => {
       if (json.success) {
-        qc.setQueryData(["me"], { success: true, data: json.data.user });
+        qc.setQueryData(["auth","me"], { success: true, data: json.data.user });
       }
     }
   })
