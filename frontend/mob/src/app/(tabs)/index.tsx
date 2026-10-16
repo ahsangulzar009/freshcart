@@ -1,4 +1,8 @@
-import { apiRequest } from '@/lib/storage';
+
+import { useUser } from '@/features/auth';
+import { useGetFeaturedProducts } from '@/features/products/hooks/useGetFeaturedProducts';
+import { useGetProducts } from '@/features/products/hooks/useGetProducts';
+import { useDebounce } from '@/lib/useDebounce';
 import { useAuthStore } from '@/store/authStore';
 import { useCartStore } from '@/store/cartStore';
 import { Product } from '@/types';
@@ -15,6 +19,7 @@ import {
   Image,
   ActivityIndicator,
   RefreshControl,
+  FlatList,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -30,14 +35,6 @@ const CATEGORY_LABEL: Record<string, string> = {
   VEGETABLES: 'Veg',
   MEAT: 'Meat',
 };
-
-
-function toArray(data: any): Product[] {
-  if (Array.isArray(data)) return data;
-  if (Array.isArray(data?.products)) return data.products;
-  if (Array.isArray(data?.items)) return data.items;
-  return [];
-}
 
 
 function ProductCard({
@@ -60,15 +57,13 @@ function ProductCard({
 
   return (
     <TouchableOpacity
-      className={`bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100 ${
-        horizontal ? 'w-48' : ''
-      }`}
+      className={`bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100 ${horizontal ? 'w-48' : ''
+        }`}
       style={!horizontal ? { width: '47.5%' } : {}}
     >
       <View
-        className={`bg-gray-50 items-center justify-center relative ${
-          horizontal ? 'h-40' : 'h-36'
-        }`}
+        className={`bg-gray-50 items-center justify-center relative ${horizontal ? 'h-40' : 'h-36'
+          }`}
       >
         {product?.imageUrl ? (
           <Image
@@ -152,18 +147,32 @@ function ProductCard({
 }
 
 export default function HomeScreen() {
-  const user = useAuthStore((state) => state.user);
-  const items = useCartStore((state) => state.items); // items badalne par re-render
+  const { data: user } = useUser()
+  const items = useCartStore((state) => state.items);
   const getTotal = useCartStore((state) => state.getTotal);
   const router = useRouter();
 
-  const [products, setProducts] = useState<Product[]>([]);
-  const [featured, setFeatured] = useState<Product[]>([]);
   const [activeCategory, setActiveCategory] = useState('ALL');
   const [search, setSearch] = useState('');
-  const [isLoading, setIsLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const cartAnim = useRef(new Animated.Value(0)).current;
+  const debouncedSearch = useDebounce(search)
+
+  const {
+    data: productsRes,
+    isLoading: loadingProducts,
+    isRefetching: refetchingProducts,
+    refetch: refetchProducts
+  } = useGetProducts({ category: activeCategory, search: debouncedSearch })
+  const products: Product[] = productsRes?.data?.data ?? [];
+
+  const {
+    data: featuredRes,
+    refetch: refetchFeatured,
+    isLoading: loadingFeaturedProducts,
+    isRefetching: refetchingFeatured
+  } = useGetFeaturedProducts();
+  const refreshing = refetchingProducts || refetchingFeatured;
+  const featured: Product[] = featuredRes?.data?.data ?? [];
 
   const itemCount = items.reduce((sum, i) => sum + i.quantity, 0);
   const total = getTotal();
@@ -176,6 +185,7 @@ export default function HomeScreen() {
     return 'Good Evening';
   }
 
+
   useEffect(() => {
     Animated.spring(cartAnim, {
       toValue: hasItems ? 1 : 0,
@@ -185,37 +195,6 @@ export default function HomeScreen() {
     }).start();
   }, [hasItems]);
 
-  async function fetchProducts() {
-    try {
-      const params = new URLSearchParams({ limit: '40' });
-      if (activeCategory !== 'ALL') params.append('category', activeCategory);
-      if (search) params.append('search', search);
-
-      const [productRes, featuredRes] = await Promise.all([
-        apiRequest(`/products?${params.toString()}`),
-        apiRequest('/products/featured'),
-      ]);
-
-      setProducts(toArray(productRes.data));
-      setFeatured(toArray(featuredRes.data));
-    } catch (error) {
-      console.log('FETCH PRODUCTS ERROR:', error);
-    } finally {
-      setIsLoading(false);
-      setRefreshing(false);
-    }
-  }
-
-  // Search par debounce: har akshar par request nahi jayegi
-  useEffect(() => {
-    const t = setTimeout(fetchProducts, 400);
-    return () => clearTimeout(t);
-  }, [activeCategory, search]);
-
-  function onRefresh() {
-    setRefreshing(true);
-    fetchProducts();
-  }
 
   return (
     <SafeAreaView className="flex-1">
@@ -227,7 +206,10 @@ export default function HomeScreen() {
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
-              onRefresh={onRefresh}
+              onRefresh={() => {
+                refetchProducts();
+                refetchFeatured();
+              }}
               colors={['#16a34a']}
             />
           }
@@ -238,7 +220,7 @@ export default function HomeScreen() {
               <View>
                 <Text className="text-green-100 text-sm">{greeting()}, 👋</Text>
                 <Text className="text-white text-xl font-bold mt-0.5">
-                  {user?.name || user?.email?.split('@')[0] || 'there'}
+                  {user.data?.name || user.data?.email?.split('@')[0] || 'there'}
                 </Text>
               </View>
 
@@ -297,11 +279,10 @@ export default function HomeScreen() {
                 {CATEGORIES.map((cat) => (
                   <TouchableOpacity
                     key={cat.id}
-                    className={`flex-row items-center gap-2 px-4 py-2.5 rounded-2xl border ${
-                      activeCategory === cat.id
-                        ? 'bg-green-600 border-green-600'
-                        : 'bg-white border-gray-200'
-                    }`}
+                    className={`flex-row items-center gap-2 px-4 py-2.5 rounded-2xl border ${activeCategory === cat.id
+                      ? 'bg-green-600 border-green-600'
+                      : 'bg-white border-gray-200'
+                      }`}
                     onPress={() => setActiveCategory(cat.id)}
                   >
                     <Ionicons
@@ -310,9 +291,8 @@ export default function HomeScreen() {
                       color={activeCategory === cat.id ? 'white' : '#6b7280'}
                     />
                     <Text
-                      className={`text-sm font-semibold ${
-                        activeCategory === cat.id ? 'text-white' : 'text-gray-600'
-                      }`}
+                      className={`text-sm font-semibold ${activeCategory === cat.id ? 'text-white' : 'text-gray-600'
+                        }`}
                     >
                       {cat.label}
                     </Text>
@@ -323,23 +303,31 @@ export default function HomeScreen() {
           </View>
 
           {/* Featured */}
-          {featured.length > 0 && activeCategory === 'ALL' && !search && (
+          {activeCategory === 'ALL' && !search && (
             <View className="mt-6">
               <View className="flex-row items-center justify-between px-5 mb-3">
                 <Text className="text-gray-900 text-lg font-bold">Featured</Text>
                 <Text className="text-green-500 text-sm font-medium">See All</Text>
               </View>
-              <ScrollView
-                className="pl-5"
-                horizontal
-                showsHorizontalScrollIndicator={false}
-              >
-                <View className="flex-row gap-3 pr-5">
-                  {featured.map((product) => (
-                    <ProductCard key={product.id} product={product} horizontal />
-                  ))}
+
+              {loadingFeaturedProducts ? (
+                <View className="items-center py-8">
+                  <ActivityIndicator size="small" color="#16a34a" />
+                  <Text className="text-gray-400 text-xs mt-2">Loading featured...</Text>
                 </View>
-              </ScrollView>
+              ) : featured.length === 0 ? (
+                <View className="items-center py-8">
+                  <Text className="text-gray-400 text-xs">No featured products</Text>
+                </View>
+              ) : (
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} className="pl-5">
+                  <View className="flex-row gap-3 pr-5">
+                    {featured.map((product) => (
+                      <ProductCard key={product.id} product={product} horizontal />
+                    ))}
+                  </View>
+                </ScrollView>
+              )}
             </View>
           )}
 
@@ -351,7 +339,7 @@ export default function HomeScreen() {
                 : CATEGORIES.find((c) => c.id === activeCategory)?.label}
             </Text>
 
-            {isLoading ? (
+            {loadingProducts ? (
               <View className="items-center py-12">
                 <ActivityIndicator size="large" color="#16a34a" />
                 <Text className="text-gray-400 text-sm mt-2">Loading products...</Text>
@@ -363,9 +351,13 @@ export default function HomeScreen() {
               </View>
             ) : (
               <View className="flex-row flex-wrap justify-between gap-y-3">
-                {products.map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
+                <FlatList
+                  data={products}
+                  keyExtractor={(item) => item.id}
+                  numColumns={2}
+                  columnWrapperStyle={{ justifyContent: 'space-between', paddingHorizontal: 20 }}
+                  renderItem={({ item }) => <ProductCard product={item} />}
+                />
               </View>
             )}
           </View>
