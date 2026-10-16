@@ -6,7 +6,9 @@ export interface AuthRequest extends Request {
   user?: AccessTokenPayload;
 }
 
-export function authorize(...roles: string[]) {
+export type UserRole = "ADMIN" | "USER" | "SELLER";
+
+export function authorize(...roles: UserRole[]) {
   return (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
 
@@ -17,7 +19,7 @@ export function authorize(...roles: string[]) {
         });
       }
 
-      if (!roles.includes(req.user.role)) {
+      if (!roles.includes(req.user.role as UserRole)) {
         logger.warn("Authorization failed", {
           userId: req.user.userId,
           role: req.user.role,

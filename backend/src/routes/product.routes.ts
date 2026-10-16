@@ -1,3 +1,9 @@
+import { deleteProduct } from "@/controller/product/deleteProduct";
+import { getFeaturedProducts } from "@/controller/product/getFeaturedProducts";
+import { getProductById } from "@/controller/product/getProductById";
+import { getProducts } from "@/controller/product/getProducts";
+import { toggleProduct } from "@/controller/product/toggleProduct";
+import { updateProduct } from "@/controller/product/updateProduct";
 import { apiValidator } from "@/middlewares/apiValidator";
 import { authenticate } from "@/middlewares/authenticate";
 import { authorize } from "@/middlewares/authorize";
@@ -44,11 +50,11 @@ const upload = multer({
   }
 })
 
-productRoutes.get('/', productController.getProducts.bind(productController))
+productRoutes.get('/', getProducts)
 
-productRoutes.get('/featured', productController.getFeaturedProducts.bind(productController))
+productRoutes.get('/featured', getFeaturedProducts)
 
-productRoutes.get('/:id', productController.getProductById.bind(productController))
+productRoutes.get('/:id', getProductById)
 
 productRoutes.put('/:id',
   authenticate,
@@ -56,19 +62,19 @@ productRoutes.put('/:id',
   uploadRateLimiter,
   upload.single("image"),
   apiValidator(validator.updateProductSchema),
-  productController.updateProduct.bind(productController)
+  updateProduct
 )
 
 productRoutes.patch('/:id',
   authenticate,
   authorize("ADMIN"),
-  productController.toggleProductActive.bind(productController)
+  toggleProduct
 )
 
 productRoutes.delete('/:id',
   authenticate,
   authorize("ADMIN"),
-  productController.deleteProduct.bind(productController)
+  deleteProduct
 )
 
 export default productRoutes
