@@ -23,7 +23,7 @@ function formatMessage(
 function writeToFile(level: LogLevel, content: string) {
   const date = new Date().toISOString().split("T")[0];
   const filename = path.join(LOG_DIR, `${date}-${level.toLowerCase()}.log`)
-  fs.appendFileSync(filename, content + '\n')
+  fs.appendFileSync(filename, content + '\n' + '\n' + '\n')
 }
 
 export const logger = {
