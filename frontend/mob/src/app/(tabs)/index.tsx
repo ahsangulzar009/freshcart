@@ -124,7 +124,7 @@ function ProductCard({
                   decrementQuantity(product.id);
                 }}
               >
-                <Ionicons name="remove" size={14} color="#16a34a" />
+                <Ionicons name="remove" size={20} color="#16a34a" />
               </TouchableOpacity>
               <Text className="text-gray-900 text-sm font-bold text-center min-w-4">
                 {qty}
@@ -135,7 +135,7 @@ function ProductCard({
                   incrementQuantity(product.id);
                 }}
               >
-                <Ionicons name="add" size={14} color="#16a34a" />
+                <Ionicons name="add" size={20} color="#16a34a" />
               </TouchableOpacity>
             </View>
           )}
