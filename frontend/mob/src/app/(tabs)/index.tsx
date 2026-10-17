@@ -1,9 +1,7 @@
-
 import { useUser } from '@/features/auth';
 import { useGetFeaturedProducts } from '@/features/products/hooks/useGetFeaturedProducts';
 import { useGetProducts } from '@/features/products/hooks/useGetProducts';
 import { useDebounce } from '@/lib/useDebounce';
-import { useAuthStore } from '@/store/authStore';
 import { useCartStore } from '@/store/cartStore';
 import { Product } from '@/types';
 import { Ionicons } from '@react-native-vector-icons/ionicons';
@@ -35,7 +33,6 @@ const CATEGORY_LABEL: Record<string, string> = {
   VEGETABLES: 'Veg',
   MEAT: 'Meat',
 };
-
 
 function ProductCard({
   product,
@@ -104,7 +101,9 @@ function ProductCard({
         </View>
 
         <View className="flex-row items-center justify-between mt-2.5">
-          <Text className="text-green-600 text-base font-bold">RS {product.price}</Text>
+          <Text className="text-green-600 text-base font-bold">
+            RS {product.price}
+          </Text>
 
           {qty === 0 ? (
             <TouchableOpacity
@@ -146,8 +145,10 @@ function ProductCard({
   );
 }
 
+
+
 export default function HomeScreen() {
-  const { data: user } = useUser()
+  const { data: user } = useUser();
   const items = useCartStore((state) => state.items);
   const getTotal = useCartStore((state) => state.getTotal);
   const router = useRouter();
@@ -155,24 +156,26 @@ export default function HomeScreen() {
   const [activeCategory, setActiveCategory] = useState('ALL');
   const [search, setSearch] = useState('');
   const cartAnim = useRef(new Animated.Value(0)).current;
-  const debouncedSearch = useDebounce(search)
+  const debouncedSearch = useDebounce(search);
 
   const {
     data: productsRes,
-    isLoading: loadingProducts,
+    isPending: pendingProducts,
+    isFetching: loadingProducts,
     isRefetching: refetchingProducts,
-    refetch: refetchProducts
-  } = useGetProducts({ category: activeCategory, search: debouncedSearch })
+    refetch: refetchProducts,
+  } = useGetProducts({ category: activeCategory, search: debouncedSearch });
   const products: Product[] = productsRes?.data?.data ?? [];
 
   const {
     data: featuredRes,
+    isFetching: loadingFeaturedProducts,
+    isRefetching: refetchingFeatured,
     refetch: refetchFeatured,
-    isLoading: loadingFeaturedProducts,
-    isRefetching: refetchingFeatured
   } = useGetFeaturedProducts();
-  const refreshing = refetchingProducts || refetchingFeatured;
   const featured: Product[] = featuredRes?.data?.data ?? [];
+
+  const refreshing = refetchingProducts || refetchingFeatured;
 
   const itemCount = items.reduce((sum, i) => sum + i.quantity, 0);
   const total = getTotal();
@@ -185,7 +188,6 @@ export default function HomeScreen() {
     return 'Good Evening';
   }
 
-
   useEffect(() => {
     Animated.spring(cartAnim, {
       toValue: hasItems ? 1 : 0,
@@ -195,14 +197,169 @@ export default function HomeScreen() {
     }).start();
   }, [hasItems]);
 
+  const listHeader = (
+    <View>
+      {/* Header */}
+      <View className="bg-green-600 px-5 pt-7 pb-6">
+        <View className="flex-row items-center justify-between mb-5">
+          <View>
+            <Text className="text-green-100 text-sm">{greeting()}, 👋</Text>
+            <Text className="text-white text-xl font-bold mt-0.5">
+              {user?.data?.name || user?.data?.email?.split('@')[0] || 'there'}
+            </Text>
+          </View>
+
+          <TouchableOpacity
+            onPress={() => router.push('/cart')}
+            className="size-11 bg-white/20 rounded-full items-center justify-center relative"
+          >
+            <Ionicons name="cart-outline" size={22} color="white" />
+            {hasItems && (
+              <View className="absolute -top-1 -right-1 size-5 bg-red-500 rounded-full items-center justify-center">
+                <Text className="text-white text-xs font-bold">{itemCount}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        </View>
+
+        <View className="flex-row items-center bg-white rounded-2xl px-4 h-12 gap-3">
+          <Ionicons name="search-outline" size={20} color="#9ca3af" />
+          <TextInput
+            className="flex-1 text-gray-900 text-sm"
+            placeholder="Search fruits, vegetables, meat..."
+            placeholderTextColor="#9ca3af"
+            value={search}
+            onChangeText={setSearch}
+          />
+          {search ? (
+            <TouchableOpacity onPress={() => setSearch('')}>
+              <Ionicons name="close-circle" size={18} color="#9ca3af" />
+            </TouchableOpacity>
+          ) : null}
+        </View>
+      </View>
+
+      {/* Offer banner */}
+      <View className="mx-2 mt-4 bg-green-600 rounded-3xl p-5 flex-row items-center justify-between">
+        <View className="flex-1">
+          <Text className="text-green-100 text-xs font-medium">LIMITED OFFER</Text>
+          <Text className="text-white text-xl font-bold mt-1">
+            Free delivery{'\n'}on first order!
+          </Text>
+          <TouchableOpacity className="bg-white mt-3 px-4 py-2 rounded-xl self-start">
+            <Text className="text-green-600 text-xs font-bold">ORDER NOW</Text>
+          </TouchableOpacity>
+        </View>
+        <View className="size-24 bg-white/10 rounded-full items-center justify-center">
+          <Ionicons name="bicycle" size={48} color="white" />
+        </View>
+      </View>
+
+      {/* Categories */}
+      <View className="mt-6 px-5">
+        <Text className="text-gray-900 text-lg font-bold mb-3">Categories</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          <View className="flex-row gap-3">
+            {CATEGORIES.map((cat) => (
+              <TouchableOpacity
+                key={cat.id}
+                className={`flex-row items-center gap-2 px-4 py-2.5 rounded-2xl border ${activeCategory === cat.id
+                  ? 'bg-green-600 border-green-600'
+                  : 'bg-white border-gray-200'
+                  }`}
+                onPress={() => setActiveCategory(cat.id)}
+              >
+                <Ionicons
+                  name={cat.icon}
+                  size={16}
+                  color={activeCategory === cat.id ? 'white' : '#6b7280'}
+                />
+                <Text
+                  className={`text-sm font-semibold ${activeCategory === cat.id ? 'text-white' : 'text-gray-600'
+                    }`}
+                >
+                  {cat.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </ScrollView>
+      </View>
+
+      {/* Featured (horizontal FlatList) */}
+      {activeCategory === 'ALL' && !search && (
+        <View className="mt-6">
+          <View className="flex-row items-center justify-between px-5 mb-3">
+            <Text className="text-gray-900 text-lg font-bold">Featured</Text>
+            <Text className="text-green-500 text-sm font-medium">See All</Text>
+          </View>
+
+          {loadingFeaturedProducts && featured.length === 0 ? (
+            <View className="items-center py-8">
+              <ActivityIndicator size="small" color="#16a34a" />
+              <Text className="text-gray-400 text-xs mt-2">Loading featured...</Text>
+            </View>
+          ) : featured.length === 0 ? (
+            <View className="items-center py-8">
+              <Text className="text-gray-400 text-xs">No featured products</Text>
+            </View>
+          ) : (
+            <FlatList
+              data={featured}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              keyExtractor={(item) => item.id}
+              contentContainerStyle={{ paddingHorizontal: 20, gap: 10 }}
+              renderItem={({ item }) => <ProductCard product={item} horizontal />}
+            />
+          )}
+        </View>
+      )}
+
+      {/* All products title */}
+      <View className="px-5 mt-6 mb-3 flex-row items-center justify-between">
+        <Text className="text-gray-900 text-lg font-bold">
+          {activeCategory === 'ALL'
+            ? 'All Products'
+            : CATEGORIES.find((c) => c.id === activeCategory)?.label}
+        </Text>
+        {loadingProducts && products.length > 0 && (
+          <ActivityIndicator size="small" color="#16a34a" />
+        )}
+      </View>
+    </View>
+  );
 
   return (
     <SafeAreaView className="flex-1">
       <View className="flex-1 bg-gray-50">
-        <ScrollView
+        <FlatList
+          data={pendingProducts ? [] : products}
+          keyExtractor={(item) => item.id}
+          numColumns={2}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: hasItems ? 110 : 24 }}
           keyboardShouldPersistTaps="handled"
+          ListHeaderComponent={listHeader}
+          columnWrapperStyle={{
+            gap: 12,
+            paddingHorizontal: 13,
+            marginBottom: 12,
+          }}
+          contentContainerStyle={{ paddingBottom: hasItems ? 70 : 0 }}
+          renderItem={({ item }) => <ProductCard product={item} />}
+          ListEmptyComponent={
+            pendingProducts ? (
+              <View className="items-center py-12">
+                <ActivityIndicator size="large" color="#16a34a" />
+                <Text className="text-gray-400 text-sm mt-2">Loading products...</Text>
+              </View>
+            ) : (
+              <View className="items-center py-12">
+                <Ionicons name="search-outline" size={48} color="#d1d5db" />
+                <Text className="text-gray-400 text-sm mt-2">No products found</Text>
+              </View>
+            )
+          }
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -213,163 +370,17 @@ export default function HomeScreen() {
               colors={['#16a34a']}
             />
           }
-        >
-          {/* Header */}
-          <View className="bg-green-600 px-5 pt-7 pb-6">
-            <View className="flex-row items-center justify-between mb-5">
-              <View>
-                <Text className="text-green-100 text-sm">{greeting()}, 👋</Text>
-                <Text className="text-white text-xl font-bold mt-0.5">
-                  {user.data?.name || user.data?.email?.split('@')[0] || 'there'}
-                </Text>
-              </View>
+          initialNumToRender={6}
+          windowSize={7}
+          removeClippedSubviews={false}
+        />
 
-              <TouchableOpacity
-                onPress={() => router.push('/cart')}
-                className="size-11 bg-white/20 rounded-full items-center justify-center relative"
-              >
-                <Ionicons name="cart-outline" size={22} color="white" />
-                {hasItems && (
-                  <View className="absolute -top-1 -right-1 size-5 bg-red-500 rounded-full items-center justify-center">
-                    <Text className="text-white text-xs font-bold">{itemCount}</Text>
-                  </View>
-                )}
-              </TouchableOpacity>
-            </View>
-
-            <View className="flex-row items-center bg-white rounded-2xl px-4 h-12 gap-3">
-              <Ionicons name="search-outline" size={20} color="#9ca3af" />
-              <TextInput
-                className="flex-1 text-gray-900 text-sm"
-                placeholder="Search fruits, vegetables, meat..."
-                placeholderTextColor="#9ca3af"
-                value={search}
-                onChangeText={setSearch}
-              />
-              {search ? (
-                <TouchableOpacity onPress={() => setSearch('')}>
-                  <Ionicons name="close-circle" size={18} color="#9ca3af" />
-                </TouchableOpacity>
-              ) : null}
-            </View>
-          </View>
-
-          {/* Offer banner */}
-          <View className="mx-5 mt-5 bg-green-600 rounded-3xl p-5 flex-row items-center justify-between">
-            <View className="flex-1">
-              <Text className="text-green-100 text-xs font-medium">LIMITED OFFER</Text>
-              <Text className="text-white text-xl font-bold mt-1">
-                Free delivery{'\n'}on first order!
-              </Text>
-              <TouchableOpacity className="bg-white mt-3 px-4 py-2 rounded-xl self-start">
-                <Text className="text-green-600 text-xs font-bold">ORDER NOW</Text>
-              </TouchableOpacity>
-            </View>
-
-            <View className="size-24 bg-white/10 rounded-full items-center justify-center">
-              <Ionicons name="bicycle" size={48} color="white" />
-            </View>
-          </View>
-
-          {/* Categories */}
-          <View className="mt-6 px-5">
-            <Text className="text-gray-900 text-lg font-bold mb-3">Categories</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              <View className="flex-row gap-3">
-                {CATEGORIES.map((cat) => (
-                  <TouchableOpacity
-                    key={cat.id}
-                    className={`flex-row items-center gap-2 px-4 py-2.5 rounded-2xl border ${activeCategory === cat.id
-                      ? 'bg-green-600 border-green-600'
-                      : 'bg-white border-gray-200'
-                      }`}
-                    onPress={() => setActiveCategory(cat.id)}
-                  >
-                    <Ionicons
-                      name={cat.icon}
-                      size={16}
-                      color={activeCategory === cat.id ? 'white' : '#6b7280'}
-                    />
-                    <Text
-                      className={`text-sm font-semibold ${activeCategory === cat.id ? 'text-white' : 'text-gray-600'
-                        }`}
-                    >
-                      {cat.label}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </ScrollView>
-          </View>
-
-          {/* Featured */}
-          {activeCategory === 'ALL' && !search && (
-            <View className="mt-6">
-              <View className="flex-row items-center justify-between px-5 mb-3">
-                <Text className="text-gray-900 text-lg font-bold">Featured</Text>
-                <Text className="text-green-500 text-sm font-medium">See All</Text>
-              </View>
-
-              {loadingFeaturedProducts ? (
-                <View className="items-center py-8">
-                  <ActivityIndicator size="small" color="#16a34a" />
-                  <Text className="text-gray-400 text-xs mt-2">Loading featured...</Text>
-                </View>
-              ) : featured.length === 0 ? (
-                <View className="items-center py-8">
-                  <Text className="text-gray-400 text-xs">No featured products</Text>
-                </View>
-              ) : (
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} className="pl-5">
-                  <View className="flex-row gap-3 pr-5">
-                    {featured.map((product) => (
-                      <ProductCard key={product.id} product={product} horizontal />
-                    ))}
-                  </View>
-                </ScrollView>
-              )}
-            </View>
-          )}
-
-          {/* All products */}
-          <View className="px-5 mt-6">
-            <Text className="text-gray-900 text-lg font-bold mb-3">
-              {activeCategory === 'ALL'
-                ? 'All Products'
-                : CATEGORIES.find((c) => c.id === activeCategory)?.label}
-            </Text>
-
-            {loadingProducts ? (
-              <View className="items-center py-12">
-                <ActivityIndicator size="large" color="#16a34a" />
-                <Text className="text-gray-400 text-sm mt-2">Loading products...</Text>
-              </View>
-            ) : products.length === 0 ? (
-              <View className="items-center py-12">
-                <Ionicons name="search-outline" size={48} color="#d1d5db" />
-                <Text className="text-gray-400 text-sm mt-2">No products found</Text>
-              </View>
-            ) : (
-              <View className="flex-row flex-wrap justify-between gap-y-3">
-                <FlatList
-                  data={products}
-                  keyExtractor={(item) => item.id}
-                  numColumns={2}
-                  columnWrapperStyle={{ justifyContent: 'space-between', paddingHorizontal: 20 }}
-                  renderItem={({ item }) => <ProductCard product={item} />}
-                />
-              </View>
-            )}
-          </View>
-        </ScrollView>
-
-        {/* Floating cart bar */}
         <Animated.View
           style={{
             position: 'absolute',
-            bottom: 24,
-            right: 16,
-            left: 16,
+            bottom: 10,
+            right: 10,
+            left: 10,
             transform: [
               {
                 translateY: cartAnim.interpolate({
@@ -382,8 +393,11 @@ export default function HomeScreen() {
           }}
           pointerEvents={hasItems ? 'auto' : 'none'}
         >
-          <TouchableOpacity activeOpacity={0.9} onPress={() => router.push('/cart')}>
-            <View className="bg-green-600 rounded-3xl px-4 py-3 flex-row items-center justify-between">
+          <TouchableOpacity
+            activeOpacity={0.9}
+            onPress={() => router.push('/cart')}
+          >
+            <View className="bg-green-600 rounded-3xl px-4 py-4 flex-row items-center justify-between">
               <View className="flex-row items-center gap-3">
                 <View className="bg-white/20 rounded-2xl px-3 py-1.5 flex-row items-center gap-1.5">
                   <Ionicons name="cart" size={14} color="white" />
@@ -413,3 +427,5 @@ export default function HomeScreen() {
     </SafeAreaView>
   );
 }
+
+
