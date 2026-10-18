@@ -6,7 +6,7 @@ export interface AuthRequest extends Request {
   user?: AccessTokenPayload;
 }
 
-export type UserRole = "ADMIN" | "USER" | "SELLER";
+export type UserRole = "ADMIN" | "USER" | "CUSTOMER";
 
 export function authorize(...roles: UserRole[]) {
   return (req: AuthRequest, res: Response, next: NextFunction) => {
