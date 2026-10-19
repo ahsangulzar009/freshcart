@@ -46,6 +46,7 @@ const AddAddressScreen = () => {
         body: JSON.stringify({ label, ...form })
       })
       Toast.show({ type: "success", text1: "Address added successfully" })
+      router.push('/checkout')
     } catch (error) {
       Alert.alert("Error", (error as Error).message)
     } finally {

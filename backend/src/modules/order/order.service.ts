@@ -35,16 +35,9 @@ class OrderService {
 
     for (const item of items) {
       const product = await productRepository.findById(item.productId)
-      if (!product) {
-        throw new Error(`Peoduct not found ${item.productId}`)
-      }
-      if (!product.isActive) {
-        throw new Error(`Product is no longer available ${product.name}`)
-      }
-
-      if (product.stock < item.quantity) {
-        throw new Error(`Insufficient stock far: ${product.name}`)
-      }
+      if (!product) throw new Error(`Product not found ${item.productId}`)
+      if (!product.isActive) throw new Error(`Product is no longer available ${product.name}`)
+      if (product.stock < item.quantity) throw new Error(`Insufficient stock for: ${product.name}`)
 
       const unitPrice = Number(product.price)
       const itemTotal = unitPrice * item.quantity
@@ -55,31 +48,35 @@ class OrderService {
         unitPrice,
         total: itemTotal
       })
-      const deliveryFee = subtotal >= FREE_DELIVERY_ABOVE ? 0 : DELIVERY_FEE;
-      const discount = 0;
-      const total = subtotal + deliveryFee - discount
+    }   // <-- loop yahan khatam
 
-      const order = await orderRepository.create({
-        customerId,
-        addressId,
-        paymentMethod,
-        subtotal,
-        deliveryFee,
-        discount,
-        total,
-        notes,
-        items: orderItems
-      });
-      for (const item of orderItems) {
-        await productRepository.decrementStock(item.productId, item.quantity)
-      }
-      logger.info("Order placed", {
-        orderId: order.id,
-        orderNumer: order.orderNumber,
-        customerId
-      });
-      return order
+    const deliveryFee = subtotal >= FREE_DELIVERY_ABOVE ? 0 : DELIVERY_FEE;
+    const discount = 0;
+    const total = subtotal + deliveryFee - discount
+
+    const order = await orderRepository.create({
+      customerId,
+      addressId,
+      paymentMethod,
+      subtotal,
+      deliveryFee,
+      discount,
+      total,
+      notes,
+      items: orderItems
+    });
+
+    for (const oi of orderItems) {
+      await productRepository.decrementStock(oi.productId, oi.quantity)
     }
+
+    logger.info("Order placed", {
+      orderId: order.id,
+      orderNumber: order.orderNumber,
+      customerId
+    });
+
+    return order
   }
 
   async getCustomerOrder(customerId: string, query: Record<string, string>) {
