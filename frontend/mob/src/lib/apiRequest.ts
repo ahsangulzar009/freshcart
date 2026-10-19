@@ -72,10 +72,34 @@ export async function apiRequest(
 
   if (result.status === 403 || result.status === 401) {
     await clearTokens();
-    queryClient.setQueryData(["auth","me"], { success: false, message: result.data.message });
+    queryClient.setQueryData(["auth", "me"], { success: false, message: result.data.message });
     return result
   }
-  
+
   return result;
 
-} 
+}
+
+export const testApi = async (
+  endPoint: string,
+  options: RequestInit = {}
+) => {
+  const accessToken = await getAccessToken();
+
+  const response = await fetch(`${BASE_URL}${endPoint}`, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
+      ...options.headers
+    }
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message) || "Something went wrong"
+  }
+
+  return data
+
+}

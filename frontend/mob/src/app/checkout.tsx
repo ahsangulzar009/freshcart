@@ -94,7 +94,7 @@ const CheckoutScreen = () => {
         <View className="mx-5 mt-5">
           <View className="flex-row items-center justify-between mb-3">
             <Text className="text-gray-900 text-base font-bold">Delivery Address</Text>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => router.push('/add-address')}>
               <Text className="text-green-600 text-sm font-medium">+ Add New</Text>
             </TouchableOpacity>
           </View>

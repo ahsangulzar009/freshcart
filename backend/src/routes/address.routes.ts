@@ -16,3 +16,5 @@ addressRoutes.put("/:id", apiValidator(validator.updateAddressSchema), addressCo
 addressRoutes.delete("/:id", addressController.deleteAddress.bind(addressController))
 
 addressRoutes.patch("/:id/default", addressController.setDefaultAddress.bind(addressController))
+
+export default addressRoutes

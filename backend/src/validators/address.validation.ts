@@ -6,7 +6,7 @@ export const createAddressSchema = z.object({
   line2: z.string().trim().optional(),
   city: z.string().min(2, "City is required").trim(),
   state: z.string().min(2, "State is required").trim(),
-  pincode: z.string().regex(/^\d{6}$/),
+  pincode: z.string().regex(/^\d{6}$/, "Pincode must be at least 6-digits"),
   latitude: z.coerce.number().min(-90).max(90).optional(),
   longitude: z.coerce.number().min(-180).max(180).optional()
 })
