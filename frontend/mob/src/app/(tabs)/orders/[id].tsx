@@ -63,14 +63,15 @@ export default function OrderDetailScreen() {
         </TouchableOpacity>
         <View className="flex-1">
           <Text className="text-gray-900 text-lg font-bold">{order.orderNumber}</Text>
-          <Text className="text-gray-400 text-xs">
-            {
-              new Date(order.createdAt).toLocaleDateString('en-GB', {
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric'
-              })
-            }
+          <Text className="text-gray-400 text-sm">
+            {new Date(order.createdAt).toLocaleString('en-US', {
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: true,
+            })}
           </Text>
         </View>
       </View>
