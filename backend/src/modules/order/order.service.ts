@@ -48,7 +48,7 @@ class OrderService {
         unitPrice,
         total: itemTotal
       })
-    }   // <-- loop yahan khatam
+    }  
 
     const deliveryFee = subtotal >= FREE_DELIVERY_ABOVE ? 0 : DELIVERY_FEE;
     const discount = 0;

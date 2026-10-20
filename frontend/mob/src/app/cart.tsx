@@ -8,20 +8,15 @@ const FREE_DELIVERY_ABOVE = 500;
 
 export default function CartScreen() {
   const router = useRouter();
-  const {
-    items,
-    incrementQuantity,
-    decrementQuantity,
-    removeItem,
-    clearCart,
-    getSubtotal,
-    getTotal,
-    getDeliveryFee
-  } = useCartStore();
+  const items = useCartStore((s) => s.items);
+  const incrementQuantity = useCartStore((s) => s.incrementQuantity);
+  const decrementQuantity = useCartStore((s) => s.decrementQuantity);
+  const removeItem = useCartStore((s) => s.removeItem);
+  const clearCart = useCartStore((s) => s.clearCart);
 
-  const subtotal = getSubtotal();
-  const total = getTotal();
-  const deliveryFee = getDeliveryFee()
+  const subtotal = useCartStore((s) => s.getSubtotal());
+  const total = useCartStore((s) => s.getTotal());
+  const deliveryFee = useCartStore((s) => s.getDeliveryFee());
   const itemCount = items.reduce((sum, i) => sum + i.quantity, 0);
   const remainingForFree = Math.max(0, FREE_DELIVERY_ABOVE - subtotal);
   const hasFreeDelivery = subtotal >= FREE_DELIVERY_ABOVE;
@@ -42,7 +37,7 @@ export default function CartScreen() {
   }
 
 
-  function renderItem ({ item }: { item: (typeof items)[number] }) {
+  function renderItem({ item }: { item: (typeof items)[number] }) {
     const imageUrl = getImageUrl(item.product.imageUrl);
 
     return (

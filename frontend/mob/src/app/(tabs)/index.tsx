@@ -20,6 +20,7 @@ import {
   FlatList,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Toast from 'react-native-toast-message';
 
 const CATEGORIES = [
   { id: 'ALL', label: 'All', icon: 'grid' as const },
@@ -196,6 +197,15 @@ export default function HomeScreen() {
       friction: 11,
     }).start();
   }, [hasItems]);
+
+  useEffect(() => {
+    const failed = [productsRes?.data, featuredRes?.data].find(
+      (r) => r && r.success === false
+    );
+    if (failed) {
+      Toast.show({ type: 'error', text1: failed.message ?? 'Something went wrong' });
+    }
+  }, [productsRes, featuredRes]);
 
   const listHeader = (
     <View>

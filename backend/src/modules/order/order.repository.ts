@@ -88,7 +88,8 @@ export class OrderRepository {
         take: limit,
         orderBy: { createdAt: 'desc' },
         include: {
-          items: { include: { product: true } }
+          items: { include: { product: true } },
+          address: true
         }
       }),
       prisma.order.count({ where: { customerId } })

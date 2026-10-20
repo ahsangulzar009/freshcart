@@ -6,10 +6,18 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import queryClient from "@/lib/queryClient";
 import { useUser } from "@/features/auth";
 import Toast from "react-native-toast-message";
+import { useEffect } from "react";
 
 function RootNavigator() {
   const { data: auth, isLoading } = useUser();
   const isAuthenticated = !!auth?.success;
+
+
+  useEffect(() => {
+    if (auth && !auth.success && auth.message) {
+      Toast.show({ type: "error", text1: auth.message });
+    }
+  }, [auth]);
 
   if (isLoading) {
     return (
@@ -20,6 +28,7 @@ function RootNavigator() {
       </SafeAreaView>
     );
   }
+
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
@@ -42,7 +51,7 @@ export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <RootNavigator />
-      <Toast  topOffset={insets.top + 10}/>
+      <Toast topOffset={insets.top + 10} />
     </QueryClientProvider>
   );
 }

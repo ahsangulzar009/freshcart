@@ -70,7 +70,7 @@ const CheckoutScreen = () => {
         Alert.alert("Order Placed!", "Your order has been placed successfully!", [
           { text: "View Orders", onPress: () => router.push('/(tabs)/orders') }
         ])
-      }, 1500)
+      }, 1000)
     } catch (error) {
       Alert.alert("Error", (error as Error).message)
     } finally {
@@ -91,7 +91,7 @@ const CheckoutScreen = () => {
     <SafeAreaView className="flex-1 bg-gray-50">
       <View className="bg-white px-5 pt-6 pb-4 border-b border-gray-100">
         <View className="flex-row items-center gap-3">
-          <TouchableOpacity className="size-10 rounded-full bg-gray-100 items-center justify-center">
+          <TouchableOpacity className="size-10 rounded-full bg-gray-100 items-center justify-center" onPress={() => router.back()}>
             <Ionicons name="arrow-back" size={20} color="#111827" />
           </TouchableOpacity>
           <View>

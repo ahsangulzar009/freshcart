@@ -1,10 +1,12 @@
 import { View, Text } from 'react-native'
 import React from 'react'
 
-export default function orders() {
+const AddressesScreen = () => {
   return (
     <View>
-      <Text className="bg-red-600">ordersjhkhj</Text>
+      <Text>AddressesScreen</Text>
     </View>
   )
 }
+
+export default AddressesScreen

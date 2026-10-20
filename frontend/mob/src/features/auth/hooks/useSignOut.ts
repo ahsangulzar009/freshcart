@@ -1,29 +1,32 @@
-import { BASE_URL } from "@/lib/apiRequest";
+import { apiRequest} from "@/lib/apiRequest";
 import { clearTokens, getRefreshToken } from "@/lib/storage";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+
 
 export function useSignOut() {
   const qc = useQueryClient();
 
   return useMutation({
     mutationFn: async () => {
+      let result;
       try {
         const stored = await getRefreshToken();
         if (stored) {
-          await fetch(`${BASE_URL}/auth/logout`, {
+          const res = await apiRequest("/auth/logout", {
             method: "POST",
-            headers: { "Content-Type": "application/json", "x-client-type": "mobile" },
             body: JSON.stringify({ refreshToken: stored }),
           });
+          result = res.data;
         }
       } catch {
       } finally {
         await clearTokens();
       }
+      return result;
     },
     onSettled: () => {
-      qc.clear();
-      qc.setQueryData(["auth","me"], { success: false, message: null });
+      qc.setQueryData(["auth", "me"], { success: false, message: null });
+      qc.removeQueries({ predicate: (q) => q.queryKey[0] !== "auth" });
     },
   });
 }
