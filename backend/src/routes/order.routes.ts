@@ -23,4 +23,9 @@ orderRoutes.get("/",
   orderController.getAllOrders.bind(orderController)
 )
 
+orderRoutes.get('/:id',
+  authorize("CUSTOMER", "ADMIN"),
+  orderController.getOrderById.bind(orderController)
+)
+
 export default orderRoutes
