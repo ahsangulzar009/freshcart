@@ -49,7 +49,7 @@ export default function OrderDetailScreen() {
     )
   }
 
-  const currentIndex = STATUS_STEPS.indexOf(order.status);
+  const currentStepIndex = STATUS_STEPS.indexOf(order.status);
   const isCancelled = order.status === 'CANCELLED'
 
   return (
@@ -79,8 +79,49 @@ export default function OrderDetailScreen() {
       <ScrollView showsVerticalScrollIndicator={false}>
         {
           !isCancelled ? (
-            <View>
-              <Text>Order Status</Text>
+            <View className="mx-5 mt-5 bg-white rounded-3xl p-5 border border-gray-100">
+              <Text className="text-gray-900 text-base font-bold mb-5">Order Status</Text>
+              {
+                STATUS_STEPS.map((step, index) => {
+                  const config = STATUS_CONFIG[step];
+                  const isDone = index <= currentStepIndex;
+                  const isActive = index === currentStepIndex
+
+                  return (
+                    <View className="flex-row gap-4" key={step}>
+                      <View className="items-center">
+                        <View className={`size-9 rounded-full items-center justify-center ${isDone ? 'bg-green-600' : 'bg-gray-100'}`}>
+                          <Ionicons
+                            name={config.icon as any}
+                            size={16}
+                            color={isDone ? 'white' : '#d1d5db'}
+                          />
+                        </View>
+                        {
+                          index < STATUS_STEPS.length - 1 && (
+                            <View
+                              className={`w-0.5 h-8 mt-1 ${isDone && index < currentStepIndex
+                                ? 'bg-green-600'
+                                : 'bg-gray-100'
+                                }`}
+                            />
+                          )
+                        }
+                      </View>
+                      <View className="flex-1 pb-8">
+                        <Text className={`text-sm font-semibold ${isActive ? 'text-green-600' : isDone ? 'text-gray-900' : 'text-gray-300'}`}>
+                          {config.label}
+                        </Text>
+                        {
+                          isActive && (
+                            <Text className="text-gray-400 text-xs mt-0.5">Current Status</Text>
+                          )
+                        }
+                      </View>
+                    </View>
+                  )
+                })
+              }
             </View>
           ) : (
             <View className="mx-5 mt-5 bg-red-50 rounded-3xl p-5 border border-red-100 flex-row items-center gap-3">
@@ -103,8 +144,68 @@ export default function OrderDetailScreen() {
             <View className="size-9 bg-green-50 rounded-2xl items-center justify-center">
               <Ionicons name="location" size={18} color="#16a34a" />
             </View>
+            <View>
+              <Text className="text-gray-900 text-sm font-semibold">{order?.address?.label}</Text>
+              <Text className="text-gray-500 text-xs mt-0.5">{order?.address?.line1} {order.address.line2 && `, ${order.address.line2}`}
+              </Text>
+              <Text>
+                {order.address.city}, {order.address.state} - {order.address.pincode}
+              </Text>
+            </View>
           </View>
         </View>
+
+        <View className="mx-5 mt-4 bg-white rounded-3xl p-5 border border-gray-100">
+          <Text className="text-gray-900 text-base font-bold mb-3">Items Ordered</Text>
+          <View>
+            {
+              order.items.map((item) => (
+                <View key={item.id} className="flex-row items-center justify-between">
+                  <View className="flex-row items-center gap-3 flex-1">
+                    <View className="size-9 bg-gray-100 rounded-xl items-center justify-center">
+                      <Ionicons name="bag-outline" size={16} color="#9ca3af" />
+                    </View>
+                    <View className="flex-1">
+                      <Text numberOfLines={1} className="text-gray-900 text-sm font-medium">
+                        {item.product.name}
+                      </Text>
+                      <Text className="text-gray-400 text-xs">{item.unitPrice} x {item.quantity}</Text>
+                    </View>
+                  </View>
+                  <Text className="text-gray-900 text-sm font-semibold">Rs {item.total}</Text>
+                </View>
+              ))
+            }
+          </View>
+        </View>
+
+        <View className="mx-5 mt-4 bg-white rounded-3xl p-5 border border-gray-100 mb-8">
+          <Text className="text-gray-900 text-base font-bold mb-3">Bill Summary</Text>
+          <View>
+            <View className="flex-row justify-between">
+              <Text className="text-gray-500 text-sm">Subtotal</Text>
+              <Text className="text-gray-900 text-sm font-medium">Rs {order.subtotal}</Text>
+            </View>
+            <View className="flex-row justify-between">
+              <Text className="text-gray-500 text-sm">Delivery Fee</Text>
+              <Text
+                className={`text-sm font-medium ${Number(order.deliveryFee) === 0 ? 'text-green-600' : 'text-gray-900'}`}
+              >
+                {Number(order.deliveryFee) === 0 ? 'FREE' : `Rs ${order.deliveryFee}`}
+              </Text>
+            </View>
+            <View className="h-px bg-gray-100 my-1" />
+            <View className="flex-row justify-between">
+              <Text className="text-gray-900 text-base font-bold">Total</Text>
+              <Text className="text-green-600 text-base font-bold">Rs {order.total}</Text>
+            </View>
+            <View className="flex-row justify-between">
+              <Text className="text-gray-500 text-sm">Payment</Text>
+              <Text className="text-gray-900 text-base">Rs {order.paymentMethod}</Text>
+            </View>
+          </View>
+        </View>
+
       </ScrollView>
     </SafeAreaView>
   )
