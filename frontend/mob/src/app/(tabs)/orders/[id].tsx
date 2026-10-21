@@ -201,7 +201,7 @@ export default function OrderDetailScreen() {
             </View>
             <View className="flex-row justify-between">
               <Text className="text-gray-500 text-sm">Payment</Text>
-              <Text className="text-gray-900 text-base">Rs {order.paymentMethod}</Text>
+              <Text className="text-gray-900 text-base">{order.paymentMethod}</Text>
             </View>
           </View>
         </View>
