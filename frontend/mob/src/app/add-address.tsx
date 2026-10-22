@@ -1,16 +1,15 @@
-import { testApi } from '@/lib/apiRequest';
+import { useCreateAddress } from '@/features/address';
 import { Ionicons } from '@react-native-vector-icons/ionicons';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, TextInput, ActivityIndicator, Alert, KeyboardAvoidingView, Platform } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Toast from 'react-native-toast-message';
+
 
 const LABELS = ["Home", 'Work', 'Other']
 
 const AddAddressScreen = () => {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
   const [label, setLabel] = useState("Home");
   const [form, setForm] = useState({
     line1: '',
@@ -19,6 +18,8 @@ const AddAddressScreen = () => {
     state: '',
     pincode: ''
   })
+
+  const { mutate: createAddress, isPending } = useCreateAddress()
 
   async function handleSubmit() {
     if (!form.line1.trim()) {
@@ -38,21 +39,10 @@ const AddAddressScreen = () => {
       return;
     }
 
-    setIsLoading(true)
-
-    try {
-      await testApi('/address', {
-        method: 'POST',
-        body: JSON.stringify({ label, ...form })
-      })
-      Toast.show({ type: "success", text1: "Address added successfully" })
-      router.push('/checkout')
-    } catch (error) {
-      Alert.alert("Error", (error as Error).message)
-    } finally {
-      setIsLoading(false)
-    }
-
+    createAddress(
+      { label, ...form },
+      { onSuccess: () => router.push('/checkout') }
+    )
   }
 
   return (
@@ -66,7 +56,7 @@ const AddAddressScreen = () => {
 
       <KeyboardAvoidingView
         className="flex-1"
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <ScrollView showsVerticalScrollIndicator={false} className="flex-1">
           <View className="px-5 pt-5 pb-36 gap-5">
@@ -174,11 +164,11 @@ const AddAddressScreen = () => {
           <TouchableOpacity
             onPress={handleSubmit}
             activeOpacity={0.85}
-            disabled={isLoading}
-            className={`h-14 rounded-2xl items-center justify-center ${isLoading ? "bg-green-400" : 'bg-green-600'}`}
+            disabled={isPending}
+            className={`h-14 rounded-2xl items-center justify-center ${isPending ? "bg-green-400" : 'bg-green-600'}`}
           >
             {
-              isLoading ? (
+              isPending ? (
                 <ActivityIndicator color="white" />
               ) : (
                 <Text className="text-white text-base font-semibold">Save Address</Text>

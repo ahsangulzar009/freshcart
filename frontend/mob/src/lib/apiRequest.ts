@@ -30,8 +30,17 @@ async function refreshTokens() {
   return refreshPromise;
 }
 
-async function request(path: string, options: RequestInit, token: string | null) {
-  if (!token) return { success: false, message: "Seesion expired please login again" };
+async function request<T>(
+  path: string,
+  options: RequestInit,
+  token: string | null
+): Promise<{ status: number; data: T }> {
+  if (!token) {
+    return {
+      status: 401,
+      data: { success: false, message: "Session expired please login again" } as T,
+    };
+  }
 
   const res = await fetch(`${BASE_URL}${path}`, {
     ...options,
@@ -39,45 +48,45 @@ async function request(path: string, options: RequestInit, token: string | null)
       "Content-Type": "application/json",
       "x-client-type": "mobile",
       ...options.headers,
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      Authorization: `Bearer ${token}`,
     },
   });
 
-  const data = await res.json().catch(() => ({
+  const data = (await res.json().catch(() => ({
     success: false,
     message: `Request failed (${res.status})`,
-  }));
+  }))) as T;
 
   return { status: res.status, data };
 }
 
-
-export async function apiRequest(
+export async function apiRequest<T>(
   endPoint: string,
   options: RequestInit = {}
-) {
-  let result = await request(endPoint, options, await getAccessToken());
+): Promise<{ status: number; data: T }> {
+  let result = await request<T>(endPoint, options, await getAccessToken());
 
   if (result.status === 401) {
     const refreshed = await refreshTokens();
 
     if (!refreshed.success) {
       await clearTokens();
-      queryClient.setQueryData(["me"], { success: false, message: refreshed.message });
-      return { status: 401, data: refreshed };
+      queryClient.setQueryData(["auth", "me"], { success: false, message: refreshed.message });
+      return { status: 401, data: refreshed as T };
     }
 
-    result = await request(endPoint, options, await getAccessToken());
+    result = await request<T>(endPoint, options, await getAccessToken());
   }
 
   if (result.status === 403 || result.status === 401) {
     await clearTokens();
-    queryClient.setQueryData(["auth", "me"], { success: false, message: result.data.message });
-    return result
+    queryClient.setQueryData(["auth", "me"], {
+      success: false,
+      message: (result.data as { message?: string }).message,
+    });
   }
 
   return result;
-
 }
 
 export const testApi = async (

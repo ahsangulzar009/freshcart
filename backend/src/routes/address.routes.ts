@@ -19,7 +19,7 @@ addressRoutes.post("/",
 
 addressRoutes.get("/:id", getAddressById)
 
-addressRoutes.put("/:id",
+addressRoutes.patch("/:id",
   apiValidator(validator.updateAddressSchema),
   updateAddress
 )

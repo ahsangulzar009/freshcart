@@ -21,6 +21,7 @@ export async function getUserAddresses(req: AuthRequest, res: Response<GetUserAd
       message: "Addresses fetched successfully",
       data: addresses.map((address) => ({
         id: address.id,
+        userId: address.userId,
         label: address.label,
         line1: address.line1,
         line2: address.line2 ?? null,
@@ -48,6 +49,7 @@ export type GetUserAddressesResponse = ApiResponse<{
   message: string;
   data: {
     id: string;
+    userId: string;
     label: string;
     line1: string;
     line2: string | null;
