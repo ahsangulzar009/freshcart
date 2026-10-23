@@ -3,7 +3,6 @@ import { OrderStatus, PaymentMethod } from "../../../prisma/generated/prisma/cli
 import productRepository from "../product/product.repository";
 import orderRepository from "./order.repository";
 import { getPaginationData, getPaginationParams } from "@/utils/ApiResponse";
-import { stat } from "fs";
 import { transporter } from "@/config/mailer";
 
 const DELIVERY_FEE = 40

@@ -1,6 +1,6 @@
 import { createAddressSchema, updateAddressSchema } from "./address.validation";
 import { sentOtpSchema, verifyOtpSchema } from "./auth.validation";
-import { assignDeliveryPartnerSchema, placeOrderSchema, updateOrderStatusSchema, updateTrackingSchema } from "./orders.validation";
+import { assignDeliveryPartnerSchema,CreateOrder, placeOrderSchema, updateOrderStatusSchema, updateTrackingSchema } from "./orders.validation";
 import { createProductSchema, updateProductSchema } from "./product.validation";
 
 export const validator = {
@@ -14,4 +14,8 @@ export const validator = {
   updateOrderStatusSchema: updateOrderStatusSchema,
   assignDeliveryPartnerSchema: assignDeliveryPartnerSchema,
   updateTrackingSchema: updateTrackingSchema
+}
+
+export type Validator = {
+  CreateOrder: CreateOrder
 }
