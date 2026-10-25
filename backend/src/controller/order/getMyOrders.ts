@@ -9,7 +9,7 @@ function formatOrderNumber(orderNumber: number, createdAt: Date) {
   return `ORD-${dateStr}-${String(orderNumber)}`;
 }
 
-export async function getOrders(req: AuthRequest, res: Response<GetOrdersResponse>) {
+export async function getMyOrders(req: AuthRequest, res: Response<GetMyOrdersResponse>) {
   try {
     if (!req.user) {
       return res.status(401).json({ success: false, message: "Unauthorized" });
@@ -130,7 +130,7 @@ export async function getOrders(req: AuthRequest, res: Response<GetOrdersRespons
   }
 }
 
-export type GetOrdersResponse = ApiResponse<{
+export type GetMyOrdersResponse = ApiResponse<{
   message: string;
   orders: {
     id: string;
