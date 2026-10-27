@@ -11,7 +11,6 @@ type UpdateAddressResponse = ApiResponse<{
     line2: string | null;
     city: string;
     state: string;
-    pincode: string;
     isDefault: boolean;
     latitude: string | null;
     longitude: string | null;
@@ -26,7 +25,6 @@ type UpdateAddressInput = {
   line2?: string | null;
   city?: string;
   state?: string;
-  pincode?: string;
   latitude?: string | null;
   longitude?: string | null;
 };

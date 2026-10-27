@@ -31,7 +31,6 @@ export async function getAddressById(req: AuthRequest, res: Response<GetAddresse
         line2: address.line2 ?? null,
         city: address.city,
         state: address.state,
-        pincode: address.pincode,
         isDefault: address.isDefault,
         latitude: address.latitude?.toString() ?? null,
         longitude: address.longitude?.toString() ?? null,
@@ -58,7 +57,6 @@ export type GetAddresseByIdResponse = ApiResponse<{
     line2: string | null;
     city: string;
     state: string;
-    pincode: string;
     isDefault: boolean;
     latitude: string | null;
     longitude: string | null;

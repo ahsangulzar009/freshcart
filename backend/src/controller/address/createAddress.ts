@@ -34,7 +34,6 @@ export async function createAddress(req: AuthRequest, res: Response<CreateAddres
           line2: body.line2 ?? null,
           city: body.city,
           state: body.state,
-          pincode: body.pincode,
           isDefault,
           latitude: body.latitude ?? null,
           longitude: body.longitude ?? null

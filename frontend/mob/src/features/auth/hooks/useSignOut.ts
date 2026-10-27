@@ -1,7 +1,11 @@
 import { apiRequest} from "@/lib/apiRequest";
+import { ApiResponse } from "@/lib/ApiRespnse";
 import { clearTokens, getRefreshToken } from "@/lib/storage";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+type LogoutResponse = ApiResponse<{
+  message: string
+}>;
 
 export function useSignOut() {
   const qc = useQueryClient();
@@ -12,7 +16,7 @@ export function useSignOut() {
       try {
         const stored = await getRefreshToken();
         if (stored) {
-          const res = await apiRequest("/auth/logout", {
+          const res = await apiRequest<LogoutResponse>("/auth/logout", {
             method: "POST",
             body: JSON.stringify({ refreshToken: stored }),
           });

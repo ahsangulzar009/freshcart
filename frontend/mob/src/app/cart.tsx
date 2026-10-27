@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Alert, ScrollView, Image, FlatList } from 'react-native';
+import { View, Text, TouchableOpacity, Alert, Image, FlatList } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useCartStore } from '@/store/cartStore';
 import { Ionicons } from '@react-native-vector-icons/ionicons';

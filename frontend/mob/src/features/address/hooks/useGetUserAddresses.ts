@@ -13,7 +13,6 @@ type GetUserAddressesResponse = ApiResponse<{
     line2: string | null;
     city: string;
     state: string;
-    pincode: string;
     isDefault: boolean;
     latitude: string | null;
     longitude: string | null;
@@ -22,10 +21,10 @@ type GetUserAddressesResponse = ApiResponse<{
   }[]
 }>
 
-export type UserSuccessRes = Extract<GetUserAddressesResponse, {success: true}>
+export type UserAddressSuccessRes = Extract<GetUserAddressesResponse, {success: true}>
 
 export function useGetUserAddresses() {
-  return useQuery<UserSuccessRes, Error>({
+  return useQuery<UserAddressSuccessRes, Error>({
     queryKey: ["addresses"],
     queryFn: async () => {
       const { data } = await apiRequest<GetUserAddressesResponse>("/address", {

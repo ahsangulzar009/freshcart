@@ -29,7 +29,6 @@ export async function updateAddress(req: AuthRequest, res: Response<UpdateAddres
         line2: body.line2,
         city: body.city,
         state: body.state,
-        pincode: body.pincode,
         isDefault: body.isDefault,
         latitude: body.latitude,
         longitude: body.longitude
@@ -48,7 +47,6 @@ export async function updateAddress(req: AuthRequest, res: Response<UpdateAddres
       line2: updatedAddress.line2 ?? null,
       city: updatedAddress.city,
       state: updatedAddress.state,
-      pincode: updatedAddress.pincode,
       isDefault: updatedAddress.isDefault,
       latitude: updatedAddress.latitude?.toString() ?? null,
       longitude: updatedAddress.longitude?.toString() ?? null,
@@ -75,7 +73,6 @@ export type UpdateAddressResponse = ApiResponse<{
     line2: string | null;
     city: string;
     state: string;
-    pincode: string;
     isDefault: boolean;
     latitude: string | null;
     longitude: string | null;

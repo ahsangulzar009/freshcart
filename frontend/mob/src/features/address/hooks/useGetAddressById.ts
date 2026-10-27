@@ -11,7 +11,6 @@ export type GetAddresseByIdResponse = ApiResponse<{
     line2: string | null;
     city: string;
     state: string;
-    pincode: string;
     isDefault: boolean;
     latitude: string | null;
     longitude: string | null;

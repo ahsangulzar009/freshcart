@@ -1,5 +1,4 @@
 import { View, Text, TouchableOpacity, Alert, ScrollView, ActivityIndicator } from 'react-native'
-import React from 'react'
 import { Ionicons } from '@react-native-vector-icons/ionicons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -55,6 +54,7 @@ export default function profileScreen() {
   const router = useRouter();
   const { mutateAsync: signOut, isPending } = useSignOut();
   const { data: user } = useUser()
+  const profile = user?.success === true ? user.data : null;
 
   function handleSignOut() {
     Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
@@ -64,16 +64,16 @@ export default function profileScreen() {
         style: 'destructive',
         onPress: async () => {
           const result = await signOut()
-          Toast.show({ type: 'success', text1: `${result.message}` })
+          Toast.show({ type: 'success', text1: `${result?.message}` })
           router.push('/(auth)')
         },
       },
     ]);
   }
 
-  const initials = user?.data?.name
-    ? user.data.name.split(' ').map((n: any) => n[0]).join('').toUpperCase()
-    : user?.data?.email[0].toUpperCase() || "?"
+  const initials = profile?.name
+    ? profile.name.split(" ").map((n) => n[0]).join("").toUpperCase()
+    : profile?.email?.[0]?.toUpperCase() ?? "?";
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
@@ -87,11 +87,11 @@ export default function profileScreen() {
             </View>
 
             <View className="flex-1">
-              <Text className="text-gray-900 text-lg font-bold">{user?.data?.name}</Text>
-              <Text className="text-gray-400 text-sm mt-0.5">{user?.data?.email}</Text>
+              <Text className="text-gray-900 text-lg font-bold">{profile?.name}</Text>
+              <Text className="text-gray-400 text-sm mt-0.5">{profile?.email}</Text>
               <View className="flex-row items-center gap-1 mt-1">
                 <View className="bg-green-100 px-2 py-0.5 rounded-full">
-                  <Text className="text-green-600  text-xs font-semibold">{user?.data?.role}</Text>
+                  <Text className="text-green-600  text-xs font-semibold">{profile?.role}</Text>
                 </View>
               </View>
             </View>

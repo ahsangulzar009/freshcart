@@ -23,7 +23,6 @@ type createAddressInput = {
   line2?: string;
   city: string;
   state: string;
-  pincode: string;
 }
 
 export function useCreateAddress() {

@@ -1,4 +1,4 @@
-import { useGetUserAddresses, UserSuccessRes } from '@/features/address';
+import { useGetUserAddresses, UserAddressSuccessRes } from '@/features/address';
 import { BASE_URL, testApi } from '@/lib/apiRequest';
 import { useCartStore } from '@/store/cartStore';
 import { Ionicons } from '@react-native-vector-icons/ionicons';
@@ -17,7 +17,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 
-type Address = UserSuccessRes['data'][0];
+type Address = UserAddressSuccessRes['data'][0];
 
 const PAYMENT_METHODS = [
   { id: 'COD', label: 'Cash on Delivery', sub: 'Pay cash when your order arrives', icon: 'cash-outline' },
@@ -307,9 +307,6 @@ const CheckoutScreen = () => {
               <Text className="text-gray-500 text-xs mt-1">
                 {address.line1}
                 {address.line2 && `, ${address.line2}`}
-              </Text>
-              <Text className="text-gray-400 text-sm">
-                {address.city}, {address.state} - {address.pincode}
               </Text>
             </View>
             <View

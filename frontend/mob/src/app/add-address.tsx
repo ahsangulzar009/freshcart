@@ -15,8 +15,7 @@ const AddAddressScreen = () => {
     line1: '',
     line2: '',
     city: '',
-    state: '',
-    pincode: ''
+    state: ''
   })
 
   const { mutate: createAddress, isPending } = useCreateAddress()
@@ -32,10 +31,6 @@ const AddAddressScreen = () => {
     }
     if (!form.state.trim()) {
       Alert.alert("Error", "State is required")
-      return;
-    }
-    if (!/^\d{6}$/.test(form.pincode.trim())) {
-      Alert.alert("Error", "Enter a valid 6-digit pincode")
       return;
     }
 
@@ -140,21 +135,6 @@ const AddAddressScreen = () => {
                   onChangeText={(v) => setForm({ ...form, state: v })}
                 />
               </View>
-            </View>
-
-            <View>
-              <Text className="text-gray-700 text-sm font-semibold mb-2">
-                Pincode <Text className="text-red-500">*</Text>
-              </Text>
-              <TextInput
-                className="bg-white border-gray-200 rounded-2xl px-4 h-14 text-gray-900 text-sm"
-                placeholder="Pincode"
-                placeholderTextColor="#560001"
-                value={form.pincode}
-                onChangeText={(v) => setForm({ ...form, pincode: v })}
-                keyboardType="number-pad"
-                maxLength={6}
-              />
             </View>
 
           </View>

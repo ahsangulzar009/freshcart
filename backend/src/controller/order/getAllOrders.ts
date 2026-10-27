@@ -58,7 +58,7 @@ export async function getAllOrders(req: AuthRequest, res: Response<GetAllOrdersR
             orderBy: { createdAt: "desc" }
           },
           address: {
-            select: { id: true, label: true, line1: true, line2: true, city: true, state: true, pincode: true }
+            select: { id: true, label: true, line1: true, line2: true, city: true, state: true }
           },
           items: {
             select: {
@@ -131,7 +131,6 @@ export async function getAllOrders(req: AuthRequest, res: Response<GetAllOrdersR
         line2: o.address.line2,
         city: o.address.city,
         state: o.address.state,
-        pincode: o.address.pincode,
       },
       items: o.items.map((i) => ({
         id: i.id,
@@ -222,7 +221,6 @@ export type GetAllOrdersResponse = ApiResponse<{
       line2: string | null;
       city: string;
       state: string;
-      pincode: string;
     };
     items: {
       id: string;

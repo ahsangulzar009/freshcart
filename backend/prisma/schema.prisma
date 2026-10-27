@@ -107,7 +107,6 @@ model Address{
   line2           String?
   city            String
   state           String
-  pincode         String
   latitude        Float?
   longitude       Float?
   isDefault       Boolean       @default(false)

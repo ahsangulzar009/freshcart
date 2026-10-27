@@ -48,8 +48,7 @@ export async function getMyOrders(req: AuthRequest, res: Response<GetMyOrdersRes
               line1: true,
               line2: true,
               city: true,
-              state: true,
-              pincode: true,
+              state: true
             }
           },
           items: {
@@ -98,7 +97,6 @@ export async function getMyOrders(req: AuthRequest, res: Response<GetMyOrdersRes
         line2: o.address.line2,
         city: o.address.city,
         state: o.address.state,
-        pincode: o.address.pincode,
       },
       items: o.items.map((i) => ({
         ...i,
@@ -153,7 +151,6 @@ export type GetMyOrdersResponse = ApiResponse<{
       line2: string | null;
       city: string;
       state: string;
-      pincode: string;
     };
     items: {
       id: string;

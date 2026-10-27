@@ -27,7 +27,6 @@ export async function getUserAddresses(req: AuthRequest, res: Response<GetUserAd
         line2: address.line2 ?? null,
         city: address.city,
         state: address.state,
-        pincode: address.pincode,
         isDefault: address.isDefault,
         latitude: address.latitude?.toString() ?? null,
         longitude: address.longitude?.toString() ?? null,
@@ -55,7 +54,6 @@ export type GetUserAddressesResponse = ApiResponse<{
     line2: string | null;
     city: string;
     state: string;
-    pincode: string;
     isDefault: boolean;
     latitude: string | null;
     longitude: string | null;
