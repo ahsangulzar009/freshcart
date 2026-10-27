@@ -1,7 +1,9 @@
+import { createOrder } from "@/controller/order/createOrder";
+import { getAllOrders } from "@/controller/order/getAllOrders";
+import { getMyOrders } from "@/controller/order/getMyOrders";
+import { getOrderById } from "@/controller/order/getOrderById";
 import { apiValidator } from "@/middlewares/apiValidator";
-import { authenticate } from "@/middlewares/authenticate";
 import { authorize } from "@/middlewares/authorize";
-import orderController from "@/modules/order/order.controller";
 import { validator } from "@/validators";
 import { Router } from "express";
 
@@ -10,22 +12,22 @@ const orderRoutes = Router()
 orderRoutes.post("/",
   authorize("CUSTOMER"),
   apiValidator(validator.placeOrderSchema),
-  orderController.placeOrder.bind(orderController)
+  createOrder
 )
 
 orderRoutes.get("/my",
-  authorize("CUSTOMER"),
-  orderController.getMyOrders.bind(orderController)
+  authorize("CUSTOMER", "DELIVERY_PARTNER"),
+  getMyOrders
 )
 
 orderRoutes.get("/",
   authorize("ADMIN"),
-  orderController.getAllOrders.bind(orderController)
+  getAllOrders
 )
 
 orderRoutes.get('/:id',
   authorize("CUSTOMER", "ADMIN"),
-  orderController.getOrderById.bind(orderController)
+  getOrderById
 )
 
 export default orderRoutes

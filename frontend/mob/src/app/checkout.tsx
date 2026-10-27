@@ -1,5 +1,5 @@
 import { useGetUserAddresses, UserAddressSuccessRes } from '@/features/address';
-import { BASE_URL, testApi } from '@/lib/apiRequest';
+import { BASE_URL} from '@/lib/apiRequest';
 import { useCartStore } from '@/store/cartStore';
 import { Ionicons } from '@react-native-vector-icons/ionicons';
 import { useRouter } from 'expo-router';
@@ -15,7 +15,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Toast from 'react-native-toast-message';
+import { useCreateOrder } from "@/features/order"
 
 type Address = UserAddressSuccessRes['data'][0];
 
@@ -29,7 +29,8 @@ const CheckoutScreen = () => {
   const { items, getSubtotal, getDeliveryFee, getTotal, clearCart } = useCartStore();
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<'COD' | 'ONLINE'>('COD');
-  const [isPlacing, setIsPlacing] = useState(false);
+
+  const { mutate: createOrder, isPending: isPlacing } = useCreateOrder();
 
   const subTotal = getSubtotal();
   const deliveryFee = getDeliveryFee();
@@ -71,31 +72,27 @@ const CheckoutScreen = () => {
       return;
     }
 
-    setIsPlacing(true);
-    try {
-      await testApi('/orders', {
-        method: 'POST',
-        body: JSON.stringify({
-          addressId: selectedAddress.id,
-          paymentMethod,
-          items: items.map((i) => ({
-            productId: i.product.id,
-            quantity: i.quantity,
-          })),
-        }),
-      });
-      clearCart();
-      Toast.show({ type: 'success', text1: 'Your order has been placed successfully!' });
-      setTimeout(() => {
-        Alert.alert('Order Placed!', 'Your order has been placed successfully!', [
-          { text: 'View Orders', onPress: () => router.push('/(tabs)/orders') },
-        ]);
-      }, 1000);
-    } catch (error) {
-      Alert.alert('Error', (error as Error).message);
-    } finally {
-      setIsPlacing(false);
-    }
+
+    createOrder(
+      {
+        addressId: selectedAddress.id,
+        paymentMethod,
+        items: items.map((i) => ({
+          productId: i.product.id,
+          quantity: i.quantity,
+        })),
+      },
+      {
+        onSuccess: () => {
+          clearCart();
+          setTimeout(() => {
+            Alert.alert('Order Placed!', 'Your order has been placed successfully!', [
+              { text: 'View Orders', onPress: () => router.push('/(tabs)/orders') },
+            ]);
+          }, 1000);
+        }
+      }
+    )
   }
 
   if (isLoading) {
@@ -190,14 +187,12 @@ const CheckoutScreen = () => {
             <TouchableOpacity
               key={method.id}
               onPress={() => setPaymentMethod(method.id)}
-              className={`bg-white rounded-3xl p-4 flex-row border-2 items-center gap-3 ${
-                paymentMethod === method.id ? 'border-green-600' : 'border-gray-100'
-              }`}
+              className={`bg-white rounded-3xl p-4 flex-row border-2 items-center gap-3 ${paymentMethod === method.id ? 'border-green-600' : 'border-gray-100'
+                }`}
             >
               <View
-                className={`size-12 rounded-2xl items-center justify-center ${
-                  paymentMethod === method.id ? 'bg-green-600' : 'bg-gray-100'
-                }`}
+                className={`size-12 rounded-2xl items-center justify-center ${paymentMethod === method.id ? 'bg-green-600' : 'bg-gray-100'
+                  }`}
               >
                 <Ionicons
                   name={method.icon as any}
@@ -210,9 +205,8 @@ const CheckoutScreen = () => {
                 <Text className="text-gray-400 text-xs mt-0.5">{method.sub}</Text>
               </View>
               <View
-                className={`size-5 rounded-full border-2 items-center justify-center ${
-                  paymentMethod === method.id ? 'border-green-600 bg-green-600' : 'border-gray-300'
-                }`}
+                className={`size-5 rounded-full border-2 items-center justify-center ${paymentMethod === method.id ? 'border-green-600 bg-green-600' : 'border-gray-300'
+                  }`}
               >
                 {paymentMethod === method.id && <Ionicons name="checkmark" size={12} color="white" />}
               </View>
@@ -275,23 +269,21 @@ const CheckoutScreen = () => {
         ItemSeparatorComponent={() => <View className="h-3" />}
         renderItem={({ item: address }) => (
           <TouchableOpacity
-            className={`mx-5 bg-white rounded-3xl p-4 border-2 flex-row items-start gap-3 ${
-              selectedAddress?.id === address.id ? 'border-green-600' : 'border-gray-100'
-            }`}
+            className={`mx-5 bg-white rounded-3xl p-4 border-2 flex-row items-start gap-3 ${selectedAddress?.id === address.id ? 'border-green-600' : 'border-gray-100'
+              }`}
             onPress={() => setSelectedAddress(address)}
           >
             <View
-              className={`size-10 rounded-2xl items-center justify-center ${
-                selectedAddress?.id === address.id ? 'bg-green-600' : 'bg-gray-100'
-              }`}
+              className={`size-10 rounded-2xl items-center justify-center ${selectedAddress?.id === address.id ? 'bg-green-600' : 'bg-gray-100'
+                }`}
             >
               <Ionicons
                 name={
                   address.label === 'Home'
                     ? 'home'
                     : address.label === 'Work'
-                    ? 'briefcase'
-                    : 'location-outline'
+                      ? 'briefcase'
+                      : 'location-outline'
                 }
                 size={18}
                 color={selectedAddress?.id === address.id ? 'white' : '#9ca3af'}
@@ -310,9 +302,8 @@ const CheckoutScreen = () => {
               </Text>
             </View>
             <View
-              className={`size-5 rounded-full border-2 items-center justify-center ${
-                selectedAddress?.id === address.id ? 'border-green-600 bg-green-600' : 'border-gray-300'
-              }`}
+              className={`size-5 rounded-full border-2 items-center justify-center ${selectedAddress?.id === address.id ? 'border-green-600 bg-green-600' : 'border-gray-300'
+                }`}
             >
               {selectedAddress?.id === address.id && (
                 <Ionicons name="checkmark" size={12} color="white" />
@@ -337,9 +328,8 @@ const CheckoutScreen = () => {
 
       <View className=" bg-white border-t border-gray-100 px-5 py-4 pb-8">
         <TouchableOpacity
-          className={`h-14 rounded-2xl items-center justify-center flex-row gap-2 ${
-            isPlacing ? 'bg-green-400' : 'bg-green-600'
-          }`}
+          className={`h-14 rounded-2xl items-center justify-center flex-row gap-2 ${isPlacing ? 'bg-green-400' : 'bg-green-600'
+            }`}
           disabled={isPlacing}
           activeOpacity={0.85}
           onPress={handlePlaceOrder}
