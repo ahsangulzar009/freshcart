@@ -3,7 +3,6 @@ import { useGetFeaturedProducts } from '@/features/products/hooks/useGetFeatured
 import { useGetProducts } from '@/features/products/hooks/useGetProducts';
 import { useDebounce } from '@/lib/useDebounce';
 import { useCartStore } from '@/store/cartStore';
-import { Product } from '@/types';
 import { Ionicons } from '@react-native-vector-icons/ionicons';
 import { useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
@@ -21,6 +20,9 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
+import type { GetProductsSuccessRes } from '@/features/products';
+
+type Product = GetProductsSuccessRes['data'][number];
 
 const CATEGORIES = [
   { id: 'ALL', label: 'All', icon: 'grid' as const },
@@ -110,7 +112,9 @@ function ProductCard({
             <TouchableOpacity
               onPress={(e) => {
                 e.stopPropagation();
-                addItem(product);
+                const price = Number(product.price);
+                if (Number.isNaN(price)) return;
+                addItem({ ...product, price });
               }}
               className="bg-green-600 px-3 h-8 rounded-xl items-center justify-center flex-row gap-1"
             >
@@ -149,7 +153,8 @@ function ProductCard({
 
 
 export default function HomeScreen() {
-  const { data: user } = useUser();
+  const { data: user } = useUser()
+  const profile = user?.success === true ? user.data : null;
   const items = useCartStore((state) => state.items);
   const getTotal = useCartStore((state) => state.getTotal);
   const router = useRouter();
@@ -165,16 +170,20 @@ export default function HomeScreen() {
     isFetching: loadingProducts,
     isRefetching: refetchingProducts,
     refetch: refetchProducts,
+    isError,
+    error,
   } = useGetProducts({ category: activeCategory, search: debouncedSearch });
-  const products: Product[] = productsRes?.data?.data ?? [];
+  const products: Product[] = productsRes?.data ?? [];
 
   const {
     data: featuredRes,
     isFetching: loadingFeaturedProducts,
     isRefetching: refetchingFeatured,
     refetch: refetchFeatured,
+    isError: isFeaturedError,
+    error: featuredError,
   } = useGetFeaturedProducts();
-  const featured: Product[] = featuredRes?.data?.data ?? [];
+  const featured: Product[] = featuredRes?.data ?? [];
 
   const refreshing = refetchingProducts || refetchingFeatured;
 
@@ -199,13 +208,22 @@ export default function HomeScreen() {
   }, [hasItems]);
 
   useEffect(() => {
-    const failed = [productsRes?.data, featuredRes?.data].find(
-      (r) => r && r.success === false
-    );
-    if (failed) {
-      Toast.show({ type: 'error', text1: failed.message ?? 'Something went wrong' });
+    if (isError) {
+      Toast.show({ type: 'error', text1: error.message ?? 'Something went wrong' });
     }
-  }, [productsRes, featuredRes]);
+  }, [isError, error]);
+
+  useEffect(() => {
+    if (isError) {
+      Toast.show({ type: 'error', text1: error.message ?? 'Something went wrong' });
+    }
+  }, [isError, error]);
+
+  useEffect(() => {
+    if (isFeaturedError) {
+      Toast.show({ type: 'error', text1: featuredError.message ?? 'Could not load featured products' });
+    }
+  }, [isFeaturedError, featuredError]);
 
   const listHeader = (
     <View>
@@ -215,7 +233,7 @@ export default function HomeScreen() {
           <View>
             <Text className="text-green-100 text-sm">{greeting()}, 👋</Text>
             <Text className="text-white text-xl font-bold mt-0.5">
-              {user?.data?.name || user?.data?.email?.split('@')[0] || 'there'}
+              {profile?.name || profile?.email?.split('@')[0] || 'there'}
             </Text>
           </View>
 
