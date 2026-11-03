@@ -8,7 +8,6 @@ import { apiValidator } from "@/middlewares/apiValidator";
 import { authenticate } from "@/middlewares/authenticate";
 import { authorize } from "@/middlewares/authorize";
 import { uploadRateLimiter } from "@/middlewares/rateLimiter";
-import productController from "@/modules/product/product.controller";
 import { validator } from "@/validators";
 import { Router } from "express";
 import multer from "multer";

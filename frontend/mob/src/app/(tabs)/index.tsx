@@ -50,6 +50,7 @@ function ProductCard({
   const addItem = useCartStore((state) => state.addItem);
   const incrementQuantity = useCartStore((state) => state.incrementQuantity);
   const decrementQuantity = useCartStore((state) => state.decrementQuantity);
+  const router = useRouter();
 
   const imageSrc = product?.imageUrl?.startsWith('http')
     ? product.imageUrl
@@ -57,6 +58,8 @@ function ProductCard({
 
   return (
     <TouchableOpacity
+      activeOpacity={0.9}
+      onPress={() => router.push(`/product/${product.id}`)}
       className={`bg-white rounded-3xl overflow-hidden shadow-sm border border-gray-100 ${horizontal ? 'w-48' : ''
         }`}
       style={!horizontal ? { width: '47.5%' } : {}}

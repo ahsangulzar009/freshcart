@@ -33,7 +33,7 @@ export async function getProductById(
     return res.status(200).json({
       success: true,
       message: "Product fetched",
-      data: {
+      product: {
         id: product.id,
         name: product.name,
         description: product.description,
@@ -59,7 +59,7 @@ export async function getProductById(
 
 export type GetProductByIdResponse = ApiResponse<{
   message: string,
-  data: {
+  product: {
     id: string;
     name: string;
     description: string;

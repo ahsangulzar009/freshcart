@@ -270,7 +270,11 @@ export default function OrderDetailScreen() {
         renderItem={({ item }) => {
           const uri = getImageUri(item.product.imageUrl);
           return (
-            <View className="mx-5 bg-white rounded-3xl p-4 border border-gray-100 flex-row items-center gap-3">
+            <TouchableOpacity
+              activeOpacity={0.85}
+              onPress={() => router.push(`/product/${item.product.id}`)}
+              className="mx-5 bg-white rounded-3xl p-4 border border-gray-100 flex-row items-center gap-3"
+            >
               <View className="size-14 bg-gray-100 rounded-2xl overflow-hidden">
                 {uri ? (
                   <Image source={{ uri }} style={{ resizeMode: 'cover' }} className="w-full h-full" />
@@ -288,8 +292,11 @@ export default function OrderDetailScreen() {
                   Rs {item.unitPrice} / {item.product.unit} x {item.quantity}
                 </Text>
               </View>
-              <Text className="text-gray-900 text-sm font-semibold">Rs {item.total}</Text>
-            </View>
+              <View className="items-end gap-1">
+                <Text className="text-gray-900 text-sm font-semibold">Rs {item.total}</Text>
+                <Ionicons name="chevron-forward" size={14} color="#d1d5db" />
+              </View>
+            </TouchableOpacity>
           );
         }}
       />
