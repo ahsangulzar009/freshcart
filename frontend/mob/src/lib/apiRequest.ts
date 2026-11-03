@@ -88,27 +88,3 @@ export async function apiRequest<T>(
 
   return result;
 }
-
-export const testApi = async (
-  endPoint: string,
-  options: RequestInit = {}
-) => {
-  const accessToken = await getAccessToken();
-
-  const response = await fetch(`${BASE_URL}${endPoint}`, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
-      ...options.headers
-    }
-  });
-
-  const data = await response.json();
-  if (!response.ok) {
-    throw new Error(data.message) || "Something went wrong"
-  }
-
-  return data
-
-}
