@@ -10,7 +10,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <Suspense fallback={<Loader />}>
           {children}
         </Suspense>
-      </Authentication>;
+      </Authentication>
     </AuthProvider>
   )
 }

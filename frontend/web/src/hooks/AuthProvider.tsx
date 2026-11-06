@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { getCurrentUser, logout as logoutRequest, type CurrentUserResponse } from "@/lib/auth";
 
 export type User = Extract<CurrentUserResponse, { success: true }>["data"];
@@ -23,6 +23,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(res.success ? res.data : null);
     setLoading(false);
   }
+
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
 
   async function logout() {
     await logoutRequest();

@@ -23,7 +23,7 @@ app.use(
     origin: process.env.ALLOWED_ORIGINS?.split(",") || [],
     credentials: true,
     methods: ["GET", "POST", "PATCH", "DELETE", "PUT"],
-    allowedHeaders: ["Content-Type", "Authorization"]
+    allowedHeaders: ["Content-Type", "Authorization", "x-client-type"]
   })
 )
 
