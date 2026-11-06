@@ -13,7 +13,13 @@ const Authentication = ({ children }: { children: React.ReactNode }) => {
     if (!loading && !user) router.replace("/login");
   }, [user, loading, router]);
 
-  if (loading || !user) return null;
+  if (loading || !user) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-green-600" />
+      </div>
+    );
+  }
 
   return <>{children}</>;
 };

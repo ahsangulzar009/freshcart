@@ -14,7 +14,8 @@ export type CurrentUserResponse = ApiResponse<{
 export async function sendOtp(email: string) {
   const res = await fetch(`${BASE_URL}/auth/send-otp`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    headers: { "Content-Type": "application/json", "x-client-type": "web" },
     body: JSON.stringify({ email }),
   });
   return res.json();

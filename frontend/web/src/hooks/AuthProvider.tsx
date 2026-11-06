@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { getCurrentUser, logout as logoutRequest, type CurrentUserResponse } from "@/lib/auth";
 
 export type User = Extract<CurrentUserResponse, { success: true }>["data"];
@@ -17,6 +17,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const fetchedRef = useRef(false);
 
   async function refetch() {
     const res = await getCurrentUser();
@@ -25,6 +26,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   useEffect(() => {
+    if (fetchedRef.current) return; 
+    fetchedRef.current = true;
     refetch();
   }, [refetch]);
 
