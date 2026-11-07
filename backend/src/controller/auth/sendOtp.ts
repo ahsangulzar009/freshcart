@@ -35,12 +35,13 @@ async function sendOtpEmail(email: string, code: string) {
 export async function sendOtp(req: Request, res: Response<SendOtpResponse>) {
   try {
     const { email } = req.body
+    const clientType = req.headers["x-client-type"] === "web";
 
     let user = await prisma.user.findUnique({ where: { email } })
 
     if (!user) {
       user = await prisma.user.create({
-        data: { email, role: "CUSTOMER" }
+        data: { email, role: clientType ? "ADMIN" : "CUSTOMER" }
       })
       logger.info("New USER CREATED", { userId: user.id, email })
     }

@@ -6,11 +6,13 @@ import { Suspense } from "react";
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
 
-    <Authentication>
-      <Suspense fallback={<Loader />}>
-        {children}
-      </Suspense>
-    </Authentication>
+    <AuthProvider>
+      <Authentication>
+        <Suspense fallback={<Loader />}>
+          {children}
+        </Suspense>
+      </Authentication>
+    </AuthProvider>
 
   )
 }
